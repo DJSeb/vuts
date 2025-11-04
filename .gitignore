@@ -1,2 +1,5 @@
-flake.nix
-flake.lock
+**/flake.nix
+**/flake.lock
+
+**/__pycache*
+scratch/venv
