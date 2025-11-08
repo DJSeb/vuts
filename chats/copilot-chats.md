@@ -1,0 +1,2 @@
+[Zmìna fetch fáze kvùli nedostatèným oprávnìním na webech](./djseb_vscopilot_chats/01.txt)
+- Actally to pomohlo, nové zdroje dodaly alespoò odkazy na novinky a nadpisy zpráv, ovšem obsah není správnì (pouze zpráva o cookies)
