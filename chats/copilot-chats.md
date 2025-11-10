@@ -1,2 +1,4 @@
-[Zmìna fetch fáze kvùli nedostatènım oprávnìním na webech](./djseb_vscopilot_chats/01.txt)
-- Actally to pomohlo, nové zdroje dodaly alespoò odkazy na novinky a nadpisy zpráv, ovšem obsah není správnì (pouze zpráva o cookies)
+**AgentÃ­ chaty zde nejsou, ale mÄ›ly by odvoditelnÃ© z vykonanÃ½ch pull requestÅ¯.**
+
+[ZmÄ›na fetch fÃ¡ze kvÅ¯li nedostatÄnÃ½m oprÃ¡vnÄ›nÃ­m na webech](./djseb_vscopilot_chats/01.txt)
+- Actually to pomohlo, novÃ© zdroje dodaly alespoÅˆ odkazy na novinky a nadpisy zprÃ¡v, ovÅ¡em obsah nenÃ­ sprÃ¡vnÄ› (pouze zprÃ¡va o cookies)
