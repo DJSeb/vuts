@@ -11,6 +11,26 @@ VUTS (Value Understanding Through Sentiment) is a complete system that:
 - **Scores** news impact from -10.00 (extremely negative) to +10.00 (extremely positive)
 - **Organizes** results for easy aggregation and trend analysis
 
+### System Architecture
+
+```mermaid
+graph LR
+    A[News Sources] -->|Articles| B[Fetching Module]
+    C[Yahoo Finance] -->|Market Data| D[Market Module]
+    B -->|Articles JSON| E[LLM Module]
+    D -->|Context| E
+    E -->|Scores -10 to +10| F[Output]
+    
+    style A fill:#e1f5ff
+    style C fill:#e1f5ff
+    style B fill:#ffe1f5
+    style D fill:#ffe1f5
+    style E fill:#ffe1f5
+    style F fill:#f5ffe1
+```
+
+_See [Architecture Diagrams](docs/Architecture_Diagrams.md) for detailed system visualizations._
+
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
@@ -68,9 +88,10 @@ find output/llm_scores -name "*_score.json" | head -5
 
 - **[Quick Start Guide](docs/Quick_Start_Guide.md)** - Get up and running in 5 minutes
 - **[Complete Workflow Guide](docs/Workflow_Guide.md)** - Detailed usage examples and advanced features
+- **[Architecture Diagrams](docs/Architecture_Diagrams.md)** - Visual system diagrams and flow charts
 - **[Development Outline](docs/Development_Outline.md)** - Project architecture and future plans
 - **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation
-- **[AI Usage Notes](chats/ai_usage_notes.md)** - Development notes and AI tool usage
+- **[Wiki Pages](wiki/)** - Comprehensive module documentation (ready for GitHub Wiki)
 
 ## 📁 Project Structure
 
