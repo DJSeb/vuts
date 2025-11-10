@@ -4,3 +4,8 @@
 scratch/venv
 .vs
 scratch/example_data/collected_news/googlenews_rss
+scratch/demo_output/
+scratch/output/
+scratch/test_data/
+scratch/market_data/
+scratch/llm_scores/
