@@ -1,31 +1,33 @@
 # LLM Sentiment Analysis System - Quick Start
 
-This directory contains a complete system for analyzing financial news articles using Large Language Models (LLMs).
+This system analyzes financial news articles using Large Language Models (LLMs).
 
 ## What's Included
 
 ### Core Scripts
-- **`src/llm_sentiment_analyzer.py`** (14KB) - Main script that analyzes articles using OpenAI API
-- **`src/market_data_fetcher.py`** (9.7KB) - Fetches historical stock data from Yahoo Finance
-- **`src/llm_sentiment_prompt.txt`** (2.2KB) - Reusable prompt template for consistent LLM scoring
+- **`scratch/src/llm/sentiment_analyzer.py`** (14KB) - Main script that analyzes articles using OpenAI API
+- **`scratch/src/market/data_fetcher.py`** (9.7KB) - Fetches historical stock data from Yahoo Finance
+- **`scratch/src/llm/sentiment_prompt.txt`** (2.2KB) - Reusable prompt template for consistent LLM scoring
 
 ### Testing & Demo
-- **`src/test_llm_analyzer.py`** (8.7KB) - Test suite for validation
-- **`demo_workflow.py`** (12KB) - Interactive demo (no API keys required)
+- **`scratch/src/tests/test_llm_analyzer.py`** (8.7KB) - Test suite for validation
+- **`scratch/demo_workflow.py`** (12KB) - Interactive demo (no API keys required)
 
 ### Documentation
-- **`WORKFLOW_GUIDE.md`** (8.4KB) - Complete usage guide with examples
-- **`src/LLM_SENTIMENT_README.md`** (3.9KB) - LLM analyzer documentation
+- **`docs/Workflow_Guide.md`** (8.4KB) - Complete usage guide with examples
+- **`scratch/src/llm/README.md`** (3.9KB) - LLM analyzer documentation
 
 ## Quick Start (5 minutes)
 
 ### 1. Install Dependencies
 ```bash
+cd scratch
 pip install -r requirements.txt
 ```
 
 ### 2. Try the Demo (No API Keys Needed)
 ```bash
+cd scratch
 python demo_workflow.py
 ```
 
@@ -40,6 +42,7 @@ export OPENAI_API_KEY="your-key-here"
 
 #### Fetch News Articles
 ```bash
+cd scratch
 python src/fetching/financial_news_collector_async.py \
     example_data/copilot-gpt5-cfg.json \
     output
@@ -47,13 +50,15 @@ python src/fetching/financial_news_collector_async.py \
 
 #### Fetch Market Data (Optional)
 ```bash
-python src/market_data_fetcher.py TSLA MSFT NVIDIA AMD \
+cd scratch
+python src/market/data_fetcher.py TSLA MSFT NVIDIA AMD \
     --output-dir output/market_data
 ```
 
 #### Analyze Sentiment
 ```bash
-python src/llm_sentiment_analyzer.py \
+cd scratch
+python src/llm/sentiment_analyzer.py \
     --data-dir output \
     --max-articles 10 \
     --max-age-days 1 \
@@ -150,17 +155,17 @@ Using gpt-4o-mini (recommended):
 
 ## Next Steps
 
-1. **Read** `WORKFLOW_GUIDE.md` for detailed examples
-2. **Run** `python demo_workflow.py` to see it in action
+1. **Read** `docs/Workflow_Guide.md` for detailed examples
+2. **Run** `cd scratch && python demo_workflow.py` to see it in action
 3. **Test** with 1-2 real articles first
 4. **Scale** up to larger batches once validated
 
 ## Support & Documentation
 
-- Main Guide: `WORKFLOW_GUIDE.md`
-- LLM Details: `src/LLM_SENTIMENT_README.md`
-- Test Suite: `python src/test_llm_analyzer.py`
-- Demo: `python demo_workflow.py`
+- Main Guide: `docs/Workflow_Guide.md`
+- LLM Details: `scratch/src/llm/README.md`
+- Test Suite: `cd scratch && python src/tests/test_llm_analyzer.py`
+- Demo: `cd scratch && python demo_workflow.py`
 
 ---
 
