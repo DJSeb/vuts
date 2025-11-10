@@ -66,10 +66,10 @@ def load_market_context(topic: str, market_data_dir: Path) -> str:
         Formatted market context string or empty string if not found
     """
     try:
-        # Import the formatter from market_data_fetcher
+        # Import the formatter from market module
         import sys
-        sys.path.insert(0, str(Path(__file__).parent))
-        from market_data_fetcher import format_market_context
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from market.data_fetcher import format_market_context
         
         market_file = market_data_dir / f"{topic}_market_data.json"
         if not market_file.exists():
@@ -392,7 +392,7 @@ def main():
     parser.add_argument(
         "--prompt-file",
         type=str,
-        default="llm_sentiment_prompt.txt",
+        default="sentiment_prompt.txt",
         help="Path to the LLM prompt template file"
     )
     parser.add_argument(

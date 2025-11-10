@@ -12,9 +12,9 @@ import datetime
 import sys
 
 # Add parent directory to path to import the analyzer
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from llm_sentiment_analyzer import (
+from llm.sentiment_analyzer import (
     load_prompt_template,
     format_prompt,
     parse_llm_response,
@@ -29,7 +29,7 @@ def test_prompt_loading():
     print("TEST: Prompt Template Loading")
     print("=" * 60)
     
-    prompt_path = Path(__file__).parent / "llm_sentiment_prompt.txt"
+    prompt_path = Path(__file__).parent.parent / "llm" / "sentiment_prompt.txt"
     
     try:
         template = load_prompt_template(prompt_path)
