@@ -13,14 +13,14 @@ import sys
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from llm_sentiment_analyzer import (
+from llm.sentiment_analyzer import (
     load_prompt_template,
     format_prompt,
     parse_llm_response,
     find_article_files,
     save_llm_score
 )
-from market_data_fetcher import format_market_context
+from market.data_fetcher import format_market_context
 
 
 def create_demo_data(base_dir: Path):
@@ -279,7 +279,7 @@ def main():
     demo_dir.mkdir(exist_ok=True)
     
     # Load prompt template
-    prompt_file = Path(__file__).parent / "src" / "llm_sentiment_prompt.txt"
+    prompt_file = Path(__file__).parent / "src" / "llm" / "sentiment_prompt.txt"
     prompt_template = load_prompt_template(prompt_file)
     
     # Create demo data

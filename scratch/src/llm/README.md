@@ -4,12 +4,13 @@ This script analyzes financial news articles using Large Language Models (LLMs) 
 
 ## Overview
 
-The `llm_sentiment_analyzer.py` script reads articles collected by `financial_news_collector_async.py` and sends them to an LLM (OpenAI API) for sentiment analysis. The LLM returns a score between -10.00 and +10.00 indicating the sentiment impact on investor perception.
+The `sentiment_analyzer.py` script reads articles collected by `financial_news_collector_async.py` (from the `fetching` module) and sends them to an LLM (OpenAI API) for sentiment analysis. The LLM returns a score between -10.00 and +10.00 indicating the sentiment impact on investor perception.
 
 ## Prerequisites
 
 1. Install required dependencies:
 ```bash
+cd scratch
 pip install -r requirements.txt
 ```
 
@@ -25,24 +26,24 @@ export OPENAI_API_KEY="your-api-key-here"
 From the `scratch` directory:
 
 ```bash
-python src/llm_sentiment_analyzer.py --data-dir .
+python src/llm/sentiment_analyzer.py --data-dir .
 ```
 
 ### With Custom Configuration
 
 ```bash
-python src/llm_sentiment_analyzer.py \
+python src/llm/sentiment_analyzer.py \
     --data-dir . \
     --max-age-days 1 \
     --max-articles 10 \
     --model gpt-4o-mini \
-    --prompt-file src/llm_sentiment_prompt.txt
+    --prompt-file src/llm/sentiment_prompt.txt
 ```
 
 ### Arguments
 
 - `--data-dir`: Base directory containing fetched article data (default: current directory)
-- `--prompt-file`: Path to the LLM prompt template file (default: llm_sentiment_prompt.txt)
+- `--prompt-file`: Path to the LLM prompt template file (default: sentiment_prompt.txt)
 - `--max-age-days`: Maximum age of articles to process in days (default: 1)
 - `--max-articles`: Maximum number of articles to process (default: 10)
 - `--model`: OpenAI model to use (default: gpt-4o-mini)
@@ -114,7 +115,7 @@ python src/fetching/financial_news_collector_async.py example_data/copilot-gpt5-
 
 2. Then analyze them with LLM:
 ```bash
-python src/llm_sentiment_analyzer.py --data-dir output --max-articles 10
+python src/llm/sentiment_analyzer.py --data-dir output --max-articles 10
 ```
 
 3. View the results:

@@ -9,7 +9,12 @@ from bs4 import BeautifulSoup
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 from urllib.parse import quote_plus, urlparse
-from email.utils import parsedate_to_datetime
+import sys
+
+# Import shared utilities
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.datetime_utils import ensure_datetime, is_recent, json_datetime_handler
+from utils.file_utils import safe_json_save, ensure_directory
 
 # Optional: improve main content extraction if available
 try:
@@ -61,12 +66,6 @@ KEYWORD_WEIGHTS = {
 # UTILITIES
 # ---------------------------------------------------------------------------
 
-def is_recent(date: datetime.datetime, max_age_days: int) -> bool:
-    if date.tzinfo is None:
-        date = date.replace(tzinfo=datetime.timezone.utc)
-    now = datetime.datetime.now(datetime.timezone.utc)
-    return (now - date).days <= max_age_days
-
 async def fetch_page(session: ClientSession, url: str, source: str, topic: str) -> str:
     """Fetch HTML content asynchronously with error reporting."""
     try:
@@ -76,27 +75,6 @@ async def fetch_page(session: ClientSession, url: str, source: str, topic: str) 
     except Exception as e:
         print(f"[ERROR] {source}:{topic} - Failed request: {e} ({url})")
         return ""
-
-def ensure_datetime(dt_value: Optional[object]) -> datetime.datetime:
-    if isinstance(dt_value, datetime.datetime):
-        return dt_value
-    if isinstance(dt_value, str):
-        try:
-            return datetime.datetime.fromisoformat(dt_value.replace("Z", "+00:00"))
-        except Exception:
-            pass
-        try:
-            return parsedate_to_datetime(dt_value)
-        except Exception:
-            pass
-    return datetime.datetime.now(datetime.timezone.utc)
-
-def json_default(o):
-    if isinstance(o, datetime.datetime):
-        if o.tzinfo is None:
-            o = o.replace(tzinfo=datetime.timezone.utc)
-        return o.isoformat()
-    return str(o)
 
 def extract_main_text(html: str, extractor: str = "readability") -> str:
     """Extracts main article text from HTML."""
@@ -247,14 +225,14 @@ async def save_articles(
                 "topic": topic,
                 "title": article.get("title"),
                 "url": url,
-                "published_at": published_at,  # serialized via json_default
+                "published_at": published_at,  # serialized via json_datetime_handler
                 "content": content_text,
                 "score": float(scores_in_order[idx]) if 0 <= idx < len(scores_in_order) else None
             }
 
             try:
                 with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, indent=2, ensure_ascii=False, default=json_default)
+                    json.dump(record, f, indent=2, ensure_ascii=False, default=json_datetime_handler)
                 print(f"[SAVED] {filepath}")
             except Exception as e:
                 print(f"[ERROR] {source}:{topic} - Failed to save article: {e} ({url})")

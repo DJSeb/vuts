@@ -61,7 +61,7 @@ Fetch historical stock prices to provide context for sentiment analysis:
 
 ```bash
 cd scratch
-python src/market_data_fetcher.py TSLA MSFT NVIDIA AMD \
+python src/market/data_fetcher.py TSLA MSFT NVIDIA AMD \
     --days 30 \
     --output-dir output/market_data \
     --show-context
@@ -79,7 +79,7 @@ Run the LLM sentiment analyzer on the fetched articles:
 
 ```bash
 cd scratch
-python src/llm_sentiment_analyzer.py \
+python src/llm/sentiment_analyzer.py \
     --data-dir output \
     --max-age-days 1 \
     --max-articles 10 \
@@ -96,7 +96,7 @@ This will:
 
 **Without market context:**
 ```bash
-python src/llm_sentiment_analyzer.py --data-dir output --max-age-days 1 --max-articles 10
+python src/llm/sentiment_analyzer.py --data-dir output --max-age-days 1 --max-articles 10
 ```
 
 ### Step 4: View Results
@@ -154,7 +154,7 @@ cat > test_data/test_source/TSLA/001_test.json << 'EOF'
 EOF
 
 # Analyze it
-python src/llm_sentiment_analyzer.py \
+python src/llm/sentiment_analyzer.py \
     --data-dir test_data \
     --max-age-days 7 \
     --max-articles 1
@@ -191,20 +191,20 @@ python src/fetching/financial_news_collector_async.py example_data/tech-cfg.json
 python src/fetching/financial_news_collector_async.py example_data/finance-cfg.json output_finance
 
 # Analyze all
-python src/llm_sentiment_analyzer.py --data-dir output_tech --max-articles 10
-python src/llm_sentiment_analyzer.py --data-dir output_finance --max-articles 10
+python src/llm/sentiment_analyzer.py --data-dir output_tech --max-articles 10
+python src/llm/sentiment_analyzer.py --data-dir output_finance --max-articles 10
 ```
 
 ### Using Different LLM Models
 
 For higher accuracy (higher cost):
 ```bash
-python src/llm_sentiment_analyzer.py --data-dir output --model gpt-4o --max-articles 5
+python src/llm/sentiment_analyzer.py --data-dir output --model gpt-4o --max-articles 5
 ```
 
 For faster/cheaper analysis:
 ```bash
-python src/llm_sentiment_analyzer.py --data-dir output --model gpt-3.5-turbo --max-articles 20
+python src/llm/sentiment_analyzer.py --data-dir output --model gpt-3.5-turbo --max-articles 20
 ```
 
 ### Scheduling Regular Updates
@@ -223,10 +223,10 @@ Create `daily_analysis.sh`:
 python src/fetching/financial_news_collector_async.py example_data/copilot-gpt5-cfg.json output
 
 # Fetch market data
-python src/market_data_fetcher.py TSLA MSFT NVIDIA AMD --output-dir output/market_data --use-cache
+python src/market/data_fetcher.py TSLA MSFT NVIDIA AMD --output-dir output/market_data --use-cache
 
 # Analyze sentiment
-python src/llm_sentiment_analyzer.py --data-dir output --max-age-days 1 --max-articles 10 --market-data-dir output/market_data
+python src/llm/sentiment_analyzer.py --data-dir output --max-age-days 1 --max-articles 10 --market-data-dir output/market_data
 ```
 
 ## Notes and Best Practices

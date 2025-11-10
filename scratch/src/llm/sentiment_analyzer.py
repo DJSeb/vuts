@@ -14,6 +14,12 @@ import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import datetime
+import sys
+
+# Import shared utilities
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.datetime_utils import ensure_datetime, json_datetime_handler
+from utils.file_utils import safe_json_save, ensure_directory
 
 # Check for OpenAI library
 try:
@@ -66,10 +72,10 @@ def load_market_context(topic: str, market_data_dir: Path) -> str:
         Formatted market context string or empty string if not found
     """
     try:
-        # Import the formatter from market_data_fetcher
+        # Import the formatter from market module
         import sys
-        sys.path.insert(0, str(Path(__file__).parent))
-        from market_data_fetcher import format_market_context
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from market.data_fetcher import format_market_context
         
         market_file = market_data_dir / f"{topic}_market_data.json"
         if not market_file.exists():
@@ -238,18 +244,12 @@ def find_article_files(data_dir: Path, max_age_days: int = 1) -> List[Path]:
             if "content" not in article or not article.get("content"):
                 continue
                 
-            # Parse published date
+            # Parse published date using shared utility
             pub_date_str = article.get("published_at")
             if pub_date_str:
-                try:
-                    pub_date = datetime.datetime.fromisoformat(pub_date_str.replace("Z", "+00:00"))
-                    if pub_date.tzinfo is None:
-                        pub_date = pub_date.replace(tzinfo=datetime.timezone.utc)
-                    
-                    if pub_date >= cutoff_date:
-                        article_files.append(json_file)
-                except Exception:
-                    pass
+                pub_date = ensure_datetime(pub_date_str)
+                if pub_date >= cutoff_date:
+                    article_files.append(json_file)
                     
         except Exception as e:
             print(f"[WARNING] Could not read {json_file}: {e}")
@@ -271,8 +271,7 @@ def save_llm_score(article_file: Path, article: Dict, score: float,
         model_used: Name of the model used
     """
     topic = article.get("topic", "unknown")
-    topic_dir = llm_scores_dir / topic
-    topic_dir.mkdir(parents=True, exist_ok=True)
+    topic_dir = ensure_directory(llm_scores_dir / topic)
     
     # Create filename based on original article file
     score_filename = article_file.stem + "_score.json"
@@ -291,9 +290,7 @@ def save_llm_score(article_file: Path, article: Dict, score: float,
         "scored_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
     
-    with open(score_filepath, "w", encoding="utf-8") as f:
-        json.dump(score_record, f, indent=2, ensure_ascii=False)
-    
+    safe_json_save(score_filepath, score_record)
     print(f"[SAVED] Score {score:+.2f} -> {score_filepath}")
 
 
@@ -392,7 +389,7 @@ def main():
     parser.add_argument(
         "--prompt-file",
         type=str,
-        default="llm_sentiment_prompt.txt",
+        default="sentiment_prompt.txt",
         help="Path to the LLM prompt template file"
     )
     parser.add_argument(
