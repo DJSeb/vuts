@@ -37,15 +37,51 @@ def load_prompt_template(prompt_path: Path) -> str:
         return f.read()
 
 
-def format_prompt(template: str, article: Dict) -> str:
-    """Format the prompt template with article data."""
-    return template.format(
+def format_prompt(template: str, article: Dict, market_context: str = "") -> str:
+    """Format the prompt template with article data and optional market context."""
+    prompt = template.format(
         title=article.get("title", "N/A"),
         published_at=article.get("published_at", "N/A"),
         source=article.get("source", "N/A"),
         topic=article.get("topic", "N/A"),
         content=article.get("content", "N/A")
     )
+    
+    # Add market context if provided
+    if market_context:
+        prompt = market_context + "\n\n" + prompt
+    
+    return prompt
+
+
+def load_market_context(topic: str, market_data_dir: Path) -> str:
+    """
+    Load market context for a given topic/symbol.
+    
+    Args:
+        topic: Stock symbol
+        market_data_dir: Directory containing market data files
+    
+    Returns:
+        Formatted market context string or empty string if not found
+    """
+    try:
+        # Import the formatter from market_data_fetcher
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent))
+        from market_data_fetcher import format_market_context
+        
+        market_file = market_data_dir / f"{topic}_market_data.json"
+        if not market_file.exists():
+            return ""
+        
+        with open(market_file, 'r', encoding='utf-8') as f:
+            market_data = json.load(f)
+        
+        return format_market_context(market_data)
+    except Exception as e:
+        print(f"[WARNING] Could not load market context for {topic}: {e}")
+        return ""
 
 
 def call_openai_api(prompt: str, api_key: str, model: str = "gpt-4o-mini") -> Optional[str]:
@@ -197,7 +233,8 @@ def save_llm_score(article_file: Path, article: Dict, score: float,
 
 async def process_articles(article_files: List[Path], prompt_template: str,
                           llm_scores_dir: Path, api_key: str, 
-                          max_articles: int = 10, model: str = "gpt-4o-mini"):
+                          max_articles: int = 10, model: str = "gpt-4o-mini",
+                          market_data_dir: Optional[Path] = None):
     """
     Process articles and get LLM sentiment scores.
     
@@ -208,6 +245,7 @@ async def process_articles(article_files: List[Path], prompt_template: str,
         api_key: OpenAI API key
         max_articles: Maximum number of articles to process
         model: OpenAI model to use
+        market_data_dir: Optional directory containing market data for context
     """
     processed = 0
     
@@ -233,8 +271,15 @@ async def process_articles(article_files: List[Path], prompt_template: str,
             print(f"  Title: {article.get('title', 'N/A')[:80]}...")
             print(f"  Topic: {topic}")
             
+            # Load market context if available
+            market_context = ""
+            if market_data_dir and market_data_dir.exists():
+                market_context = load_market_context(topic, market_data_dir)
+                if market_context:
+                    print(f"  Including market context for {topic}")
+            
             # Format prompt
-            prompt = format_prompt(prompt_template, article)
+            prompt = format_prompt(prompt_template, article, market_context)
             
             # Call LLM
             print(f"  Calling {model}...")
@@ -307,6 +352,12 @@ def main():
         default=None,
         help="OpenAI API key (default: read from OPENAI_API_KEY env var)"
     )
+    parser.add_argument(
+        "--market-data-dir",
+        type=str,
+        default=None,
+        help="Directory containing market data for context (optional)"
+    )
     
     args = parser.parse_args()
     
@@ -333,9 +384,19 @@ def main():
     llm_scores_dir = data_dir / "llm_scores"
     llm_scores_dir.mkdir(parents=True, exist_ok=True)
     
+    # Setup market data directory if provided
+    market_data_dir = None
+    if args.market_data_dir:
+        market_data_dir = Path(args.market_data_dir)
+        if not market_data_dir.exists():
+            print(f"[WARNING] Market data directory not found: {market_data_dir}")
+            market_data_dir = None
+    
     print(f"Data directory: {data_dir}")
     print(f"Prompt file: {prompt_file}")
     print(f"LLM scores output: {llm_scores_dir}")
+    if market_data_dir:
+        print(f"Market data directory: {market_data_dir}")
     print(f"Model: {args.model}")
     print(f"Max articles: {args.max_articles}")
     print(f"Max age: {args.max_age_days} days")
@@ -362,7 +423,8 @@ def main():
         llm_scores_dir,
         api_key,
         args.max_articles,
-        args.model
+        args.model,
+        market_data_dir
     ))
     
     return 0
