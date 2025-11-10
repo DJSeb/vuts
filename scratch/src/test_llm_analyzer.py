@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from llm_sentiment_analyzer import (
     load_prompt_template,
     format_prompt,
-    validate_score,
+    parse_llm_response,
     find_article_files,
     save_llm_score
 )
@@ -81,38 +81,72 @@ Content: {content}
         return False
 
 
-def test_score_validation():
-    """Test score validation."""
+def test_response_parsing():
+    """Test parsing LLM response with score and explanation."""
     print("\n" + "=" * 60)
-    print("TEST: Score Validation")
+    print("TEST: Response Parsing")
     print("=" * 60)
     
     test_cases = [
-        ("5.50", 5.50, True),
-        ("+7.25", 7.25, True),
-        ("-3.75", -3.75, True),
-        ("0.00", 0.00, True),
-        ("-10.00", -10.00, True),
-        ("+10.00", 10.00, True),
-        ("15.00", None, False),  # Out of range
-        ("-15.00", None, False),  # Out of range
-        ("invalid", None, False),  # Not a number
+        (
+            "SCORE: 5.50\nEXPLANATION: Strong earnings beat expectations.",
+            5.50,
+            "Strong earnings beat expectations.",
+            True
+        ),
+        (
+            "SCORE: +7.25\nEXPLANATION: Revenue growth. Positive outlook. Market share gains.",
+            7.25,
+            "Revenue growth. Positive outlook. Market share gains.",
+            True
+        ),
+        (
+            "SCORE: -3.75\nEXPLANATION: Missed guidance. Concerns about competition.",
+            -3.75,
+            "Missed guidance. Concerns about competition.",
+            True
+        ),
+        (
+            "SCORE: 0.00\nEXPLANATION: Neutral reporting with no clear direction.",
+            0.00,
+            "Neutral reporting with no clear direction.",
+            True
+        ),
+        (
+            "SCORE: -10.00\nEXPLANATION: Bankruptcy filing announced.",
+            -10.00,
+            "Bankruptcy filing announced.",
+            True
+        ),
+        (
+            "Invalid response without proper format",
+            None,
+            None,
+            False
+        ),
+        (
+            "SCORE: 15.00\nEXPLANATION: Out of range",
+            None,
+            None,
+            False
+        ),
     ]
     
     all_passed = True
-    for score_text, expected, should_pass in test_cases:
-        result = validate_score(score_text)
+    for response_text, expected_score, expected_explanation, should_pass in test_cases:
+        score, explanation = parse_llm_response(response_text)
+        
         if should_pass:
-            if result == expected:
-                print(f"✓ '{score_text}' -> {result}")
+            if score == expected_score and explanation == expected_explanation:
+                print(f"✓ Score: {score:+.2f}, Explanation: {explanation[:40]}...")
             else:
-                print(f"✗ '{score_text}' expected {expected}, got {result}")
+                print(f"✗ Expected ({expected_score}, {expected_explanation}), got ({score}, {explanation})")
                 all_passed = False
         else:
-            if result is None:
-                print(f"✓ '{score_text}' correctly rejected")
+            if score is None:
+                print(f"✓ Invalid response correctly rejected")
             else:
-                print(f"✗ '{score_text}' should be rejected but got {result}")
+                print(f"✗ Should be rejected but got score={score}")
                 all_passed = False
     
     return all_passed
@@ -210,6 +244,7 @@ def test_score_saving():
                 article_file,
                 article,
                 score=5.50,
+                explanation="Strong earnings beat. Positive outlook.",
                 llm_scores_dir=llm_scores_dir,
                 model_used="test-model"
             )
@@ -221,13 +256,14 @@ def test_score_saving():
                 with open(expected_file, "r") as f:
                     saved_data = json.load(f)
                 
-                if saved_data["llm_score"] == 5.50:
-                    print("✓ Score saved successfully")
+                if saved_data["llm_score"] == 5.50 and "llm_explanation" in saved_data:
+                    print("✓ Score and explanation saved successfully")
                     print(f"  Location: {expected_file.relative_to(tmpdir)}")
                     print(f"  Score: {saved_data['llm_score']}")
+                    print(f"  Explanation: {saved_data['llm_explanation'][:50]}...")
                     return True
                 else:
-                    print(f"✗ Score mismatch: expected 5.50, got {saved_data['llm_score']}")
+                    print(f"✗ Data mismatch in saved file")
                     return False
             else:
                 print(f"✗ Score file not created at {expected_file}")
@@ -247,7 +283,7 @@ def main():
     tests = [
         ("Prompt Loading", test_prompt_loading),
         ("Prompt Formatting", test_prompt_formatting),
-        ("Score Validation", test_score_validation),
+        ("Response Parsing", test_response_parsing),
         ("Article Finding", test_article_finding),
         ("Score Saving", test_score_saving),
     ]

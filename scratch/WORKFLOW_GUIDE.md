@@ -111,7 +111,7 @@ find output/llm_scores -name "*_score.json"
 cat output/llm_scores/TSLA/001_2024-11-10_score.json
 
 # View all scores in a formatted way
-find output/llm_scores -name "*_score.json" -exec echo "---" \; -exec jq '{topic, title, llm_score, url}' {} \;
+find output/llm_scores -name "*_score.json" -exec echo "---" \; -exec jq '{topic, title, llm_score, llm_explanation}' {} \;
 ```
 
 Example output structure:
@@ -124,10 +124,13 @@ Example output structure:
   "url": "https://example.com/article",
   "published_at": "2024-11-10T12:00:00+00:00",
   "llm_score": 6.75,
+  "llm_explanation": "Strong Q4 earnings beat. Revenue up 25% YoY. Raised guidance for next quarter. Analyst upgrades following announcement. Positive market reception.",
   "model": "gpt-4o-mini",
   "scored_at": "2024-11-10T18:30:00+00:00"
 }
 ```
+
+The `llm_explanation` field provides context for the score, making results more interpretable and useful for reports.
 
 ## Quick Test Run
 

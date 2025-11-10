@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from llm_sentiment_analyzer import (
     load_prompt_template,
     format_prompt,
-    validate_score,
+    parse_llm_response,
     find_article_files,
     save_llm_score
 )
@@ -172,10 +172,10 @@ def demonstrate_scoring(articles_dir: Path):
     
     print(f"\nFound {len(articles)} articles to score")
     
-    # Mock scores (these would come from the LLM)
-    mock_scores = {
-        "001_positive_news.json": "+6.75",
-        "002_negative_news.json": "-4.25"
+    # Mock responses (these would come from the LLM)
+    mock_responses = {
+        "001_positive_news.json": "SCORE: +6.75\nEXPLANATION: Record deliveries exceed expectations. Strong YoY growth of 35%. Improved production efficiency. Positive analyst response. Expansion plans announced.",
+        "002_negative_news.json": "SCORE: -4.25\nEXPLANATION: Major recall of 500K vehicles. Third recall this year raises quality concerns. Consumer advocacy criticism. Stock declined in after-hours trading."
     }
     
     llm_scores_dir = articles_dir.parent.parent / "llm_scores"
@@ -188,15 +188,16 @@ def demonstrate_scoring(articles_dir: Path):
         
         print(f"Title: {article['title'][:60]}...")
         
-        # Get mock score
-        mock_score_text = mock_scores.get(article_file.name, "0.00")
-        print(f"LLM Response: {mock_score_text}")
+        # Get mock response
+        mock_response = mock_responses.get(article_file.name, "SCORE: 0.00\nEXPLANATION: No information available.")
+        print(f"LLM Response:\n{mock_response}")
         
-        # Validate score
-        score = validate_score(mock_score_text)
+        # Parse score and explanation
+        score, explanation = parse_llm_response(mock_response)
         
         if score is not None:
-            print(f"Validated Score: {score:+.2f}")
+            print(f"\nParsed Score: {score:+.2f}")
+            print(f"Parsed Explanation: {explanation}")
             
             # Interpret the score
             if score >= 7.0:
@@ -220,8 +221,8 @@ def demonstrate_scoring(articles_dir: Path):
             
             print(f"Interpretation: {interpretation}")
             
-            # Save score
-            save_llm_score(article_file, article, score, llm_scores_dir, "demo-model")
+            # Save score and explanation
+            save_llm_score(article_file, article, score, explanation, llm_scores_dir, "demo-model")
             
             # Show saved file content
             score_file = llm_scores_dir / article['topic'] / f"{article_file.stem}_score.json"
@@ -230,7 +231,7 @@ def demonstrate_scoring(articles_dir: Path):
             
             print(f"Saved to: {score_file}")
         else:
-            print("✗ Invalid score")
+            print("✗ Invalid response")
 
 
 def show_results(llm_scores_dir: Path):
@@ -256,6 +257,9 @@ def show_results(llm_scores_dir: Path):
         title = data['title'][:57] + "..." if len(data['title']) > 60 else data['title']
         score_color = "↑" if data['llm_score'] > 0 else "↓" if data['llm_score'] < 0 else "→"
         print(f"{data['topic']:<15} {score_color} {data['llm_score']:+6.2f}   {title}")
+        if 'llm_explanation' in data:
+            explanation = data['llm_explanation'][:75] + "..." if len(data['llm_explanation']) > 75 else data['llm_explanation']
+            print(f"{'':15}   └─ {explanation}")
     
     avg_score = sum(d['llm_score'] for d in scores) / len(scores) if scores else 0
     print("-" * 85)

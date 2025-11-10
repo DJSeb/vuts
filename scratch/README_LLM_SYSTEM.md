@@ -101,10 +101,13 @@ find output/llm_scores -name "*_score.json" | head -3
   "url": "https://example.com/article",
   "published_at": "2024-11-10T12:00:00+00:00",
   "llm_score": 6.75,
+  "llm_explanation": "Strong Q4 earnings beat. Revenue up 25% YoY. Raised guidance for next quarter. Analyst upgrades following announcement.",
   "model": "gpt-4o-mini",
   "scored_at": "2024-11-10T18:30:00+00:00"
 }
 ```
+
+**Note**: Each score now includes an `llm_explanation` field with a brief explanation (keywords or up to 5 sentences) of why the LLM assigned that score. This makes results more interpretable and useful for creating reports and timelines.
 
 ## Configuration Options
 

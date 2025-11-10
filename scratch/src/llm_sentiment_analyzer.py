@@ -12,7 +12,7 @@ import json
 import argparse
 import asyncio
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import datetime
 
 # Check for OpenAI library
@@ -86,7 +86,7 @@ def load_market_context(topic: str, market_data_dir: Path) -> str:
 
 def call_openai_api(prompt: str, api_key: str, model: str = "gpt-4o-mini") -> Optional[str]:
     """
-    Call OpenAI API to get sentiment score.
+    Call OpenAI API to get sentiment score and explanation.
     
     Args:
         prompt: The formatted prompt with article content
@@ -94,7 +94,7 @@ def call_openai_api(prompt: str, api_key: str, model: str = "gpt-4o-mini") -> Op
         model: Model to use (default: gpt-4o-mini for cost efficiency)
     
     Returns:
-        The score as a string, or None if failed
+        The response text containing score and explanation, or None if failed
     """
     if not HAVE_OPENAI:
         print("[ERROR] OpenAI library not available")
@@ -108,15 +108,79 @@ def call_openai_api(prompt: str, api_key: str, model: str = "gpt-4o-mini") -> Op
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,  # Lower temperature for more consistent scoring
-            max_tokens=10  # We only need a number
+            max_tokens=200  # Enough for score + brief explanation
         )
         
-        score_text = response.choices[0].message.content.strip()
-        return score_text
+        response_text = response.choices[0].message.content.strip()
+        return response_text
         
     except Exception as e:
         print(f"[ERROR] OpenAI API call failed: {e}")
         return None
+
+
+def parse_llm_response(response_text: str) -> Tuple[Optional[float], Optional[str]]:
+    """
+    Parse the LLM response to extract score and explanation.
+    
+    Args:
+        response_text: The raw text response from LLM
+    
+    Returns:
+        Tuple of (score, explanation) or (None, None) if parsing failed
+    """
+    try:
+        lines = response_text.strip().split('\n')
+        score = None
+        explanation = None
+        
+        for line in lines:
+            line = line.strip()
+            
+            # Look for score line
+            if line.startswith('SCORE:'):
+                score_text = line.replace('SCORE:', '').strip().replace('+', '')
+                try:
+                    score = float(score_text)
+                    if not (-10.0 <= score <= 10.0):
+                        print(f"[WARNING] Score {score} out of range [-10.00, +10.00]")
+                        score = None
+                    else:
+                        score = round(score, 2)
+                except ValueError:
+                    print(f"[WARNING] Could not parse score from: {score_text}")
+                    score = None
+            
+            # Look for explanation line
+            elif line.startswith('EXPLANATION:'):
+                explanation = line.replace('EXPLANATION:', '').strip()
+        
+        # Handle case where explanation continues on next lines
+        if explanation is not None and len(lines) > 2:
+            # Find the explanation line index
+            for i, line in enumerate(lines):
+                if line.strip().startswith('EXPLANATION:'):
+                    # Collect all remaining lines as part of explanation
+                    remaining_lines = [lines[i].replace('EXPLANATION:', '').strip()]
+                    for j in range(i + 1, len(lines)):
+                        if lines[j].strip() and not lines[j].strip().startswith('SCORE:'):
+                            remaining_lines.append(lines[j].strip())
+                    explanation = ' '.join(remaining_lines)
+                    break
+        
+        if score is None:
+            print(f"[WARNING] Could not extract score from response: {response_text[:100]}")
+            return None, None
+        
+        if explanation is None or not explanation:
+            print(f"[WARNING] Could not extract explanation from response")
+            explanation = "No explanation provided"
+        
+        return score, explanation
+        
+    except Exception as e:
+        print(f"[WARNING] Failed to parse LLM response: {e}")
+        return None, None
 
 
 def validate_score(score_text: str) -> Optional[float]:
@@ -194,7 +258,7 @@ def find_article_files(data_dir: Path, max_age_days: int = 1) -> List[Path]:
 
 
 def save_llm_score(article_file: Path, article: Dict, score: float, 
-                   llm_scores_dir: Path, model_used: str):
+                   explanation: str, llm_scores_dir: Path, model_used: str):
     """
     Save the LLM score result to the llm_scores directory.
     
@@ -202,6 +266,7 @@ def save_llm_score(article_file: Path, article: Dict, score: float,
         article_file: Original article file path
         article: Article data
         score: LLM sentiment score
+        explanation: LLM explanation for the score
         llm_scores_dir: Base directory for LLM scores
         model_used: Name of the model used
     """
@@ -221,6 +286,7 @@ def save_llm_score(article_file: Path, article: Dict, score: float,
         "url": article.get("url"),
         "published_at": article.get("published_at"),
         "llm_score": score,
+        "llm_explanation": explanation,
         "model": model_used,
         "scored_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
@@ -283,22 +349,23 @@ async def process_articles(article_files: List[Path], prompt_template: str,
             
             # Call LLM
             print(f"  Calling {model}...")
-            score_text = call_openai_api(prompt, api_key, model)
+            response_text = call_openai_api(prompt, api_key, model)
             
-            if score_text is None:
+            if response_text is None:
                 print(f"  [FAILED] Could not get response from LLM")
                 continue
             
-            # Validate score
-            score = validate_score(score_text)
+            # Parse score and explanation
+            score, explanation = parse_llm_response(response_text)
             if score is None:
-                print(f"  [FAILED] Invalid score: {score_text}")
+                print(f"  [FAILED] Could not parse score from response")
                 continue
             
             print(f"  Score: {score:+.2f}")
+            print(f"  Explanation: {explanation[:80]}..." if len(explanation) > 80 else f"  Explanation: {explanation}")
             
-            # Save score
-            save_llm_score(article_file, article, score, llm_scores_dir, model)
+            # Save score and explanation
+            save_llm_score(article_file, article, score, explanation, llm_scores_dir, model)
             
             processed += 1
             

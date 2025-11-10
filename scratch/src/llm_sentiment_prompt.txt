@@ -40,8 +40,21 @@ SCORING GUIDELINES:
   * +7.00 to +10.00: Extremely positive (transformative success, major breakthroughs)
 
 OUTPUT FORMAT:
-Provide ONLY a single number with exactly 2 decimal places (e.g., -7.50, 0.00, +8.25).
-Do NOT include any explanation, reasoning, or additional text.
-Your response must be ONLY the numerical score.
+You must provide your response in the following format:
 
-SCORE:
+SCORE: [number with exactly 2 decimal places, e.g., -7.50, 0.00, +8.25]
+EXPLANATION: [brief explanation in keywords or at most 5 sentences explaining why you scored this way]
+
+The explanation should be concise and focus on the key factors that influenced your score.
+Use keywords or short sentences. Mention specific details like:
+- Key financial metrics or performance indicators
+- Significant company actions or announcements
+- Market reactions or analyst opinions
+- Regulatory or legal developments
+- Other material factors
+
+Example:
+SCORE: +6.75
+EXPLANATION: Strong Q4 earnings beat. Revenue up 25% YoY. Raised guidance for next quarter. Analyst upgrades following announcement. Positive market reception.
+
+Your response:

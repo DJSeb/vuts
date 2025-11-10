@@ -80,10 +80,17 @@ Each score file contains:
   "url": "https://...",
   "published_at": "2024-11-10T12:00:00+00:00",
   "llm_score": -3.50,
+  "llm_explanation": "Missed earnings guidance. Revenue below analyst expectations. Management cautious on Q4 outlook.",
   "model": "gpt-4o-mini",
   "scored_at": "2024-11-10T18:30:00+00:00"
 }
 ```
+
+The `llm_explanation` field provides a brief explanation (keywords or up to 5 sentences) of why the LLM assigned that particular score. This is useful for:
+- Understanding the reasoning behind each score
+- Creating reports and timelines
+- Testing whether articles were parsed correctly
+- Human-friendly result interpretation
 
 ## Scoring Scale
 
