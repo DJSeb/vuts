@@ -81,7 +81,7 @@ def test_execute_api_command_building():
                                content_type='application/json')
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'does not exist' in data['error']
+        assert 'Invalid' in data['error'] or 'inaccessible' in data['error']
         print("✓ Non-existent config file properly rejected")
         
         # Test market with invalid symbols format

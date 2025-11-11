@@ -305,21 +305,35 @@ def api_execute_command():
         
         # Helper function to validate and resolve paths safely
         def safe_resolve_path(user_path: str, must_exist: bool = False) -> Path:
-            """Safely resolve a user-provided path relative to base directory."""
-            # Remove any path traversal attempts
-            user_path = str(user_path).replace('..', '').strip()
-            if not user_path or user_path.startswith('/'):
-                raise ValueError(f"Invalid path: {user_path}")
+            """
+            Safely resolve a user-provided path relative to base directory.
             
-            # Resolve path relative to base directory
-            resolved = (base_dir / user_path).resolve()
+            This function prevents path traversal attacks by:
+            1. Removing '..' from paths
+            2. Rejecting absolute paths
+            3. Ensuring resolved path stays within base directory
             
-            # Ensure the resolved path is within base directory
-            if not str(resolved).startswith(str(base_dir.resolve())):
-                raise ValueError(f"Path escapes base directory: {user_path}")
+            Returns: Validated Path object within base directory
+            Raises: ValueError if path is invalid or escapes base directory
+            """
+            # Sanitize path: remove traversal attempts and whitespace
+            sanitized = str(user_path).replace('..', '').strip()
+            if not sanitized or sanitized.startswith('/'):
+                raise ValueError("Invalid path format")
             
+            # Resolve relative to base directory and get absolute path
+            # This is safe because we've removed '..' and validated format
+            resolved = (base_dir / sanitized).resolve()
+            base_resolved = base_dir.resolve()
+            
+            # Security check: ensure path is within base directory
+            # This prevents escaping even if there are symbolic links
+            if not str(resolved).startswith(str(base_resolved)):
+                raise ValueError("Path validation failed")
+            
+            # Check existence if required
             if must_exist and not resolved.exists():
-                raise ValueError(f"Path does not exist: {user_path}")
+                raise ValueError("Path does not exist")
             
             return resolved
         
@@ -333,16 +347,16 @@ def api_execute_command():
             
             try:
                 config_full_path = safe_resolve_path(config_path, must_exist=True)
-            except ValueError as e:
-                return jsonify({'success': False, 'error': str(e)}), 400
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Invalid or inaccessible config file path'}), 400
             
             cmd.extend(['--config', str(config_full_path)])
             if output_dir:
                 try:
                     output_full_path = safe_resolve_path(output_dir, must_exist=False)
                     cmd.extend(['--output-dir', str(output_full_path)])
-                except ValueError as e:
-                    return jsonify({'success': False, 'error': str(e)}), 400
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid output directory path'}), 400
         
         elif command == 'analyze':
             data_dir = args.get('data_dir', 'output')
@@ -353,8 +367,8 @@ def api_execute_command():
             try:
                 data_full_path = safe_resolve_path(data_dir, must_exist=False)
                 cmd.extend(['--data-dir', str(data_full_path)])
-            except ValueError as e:
-                return jsonify({'success': False, 'error': str(e)}), 400
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Invalid data directory path'}), 400
             
             # Validate max_articles is a positive integer
             try:
@@ -376,8 +390,8 @@ def api_execute_command():
                 try:
                     market_full_path = safe_resolve_path(market_data_dir, must_exist=False)
                     cmd.extend(['--market-data-dir', str(market_full_path)])
-                except ValueError as e:
-                    return jsonify({'success': False, 'error': str(e)}), 400
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid market data directory path'}), 400
         
         elif command == 'market':
             symbols = args.get('symbols', '')
@@ -408,8 +422,8 @@ def api_execute_command():
             try:
                 output_full_path = safe_resolve_path(output_dir, must_exist=False)
                 cmd.extend(['--output-dir', str(output_full_path)])
-            except ValueError as e:
-                return jsonify({'success': False, 'error': str(e)}), 400
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Invalid output directory path'}), 400
         
         # Execute command
         print(f"Executing command: {' '.join(cmd)}")
