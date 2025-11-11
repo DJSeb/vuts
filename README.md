@@ -63,12 +63,32 @@ export FINNHUB_KEY="your-finnhub-key"
 
 ### 4. Run the Complete Workflow
 
+#### Using the Centralized `vuts` Command (Recommended)
+
+```bash
+cd scratch
+
+# Fetch news articles
+./vuts fetch --config example_data/copilot-gpt5-cfg.json --output-dir output
+
+# Fetch market data (optional but recommended)
+./vuts market TSLA MSFT NVIDIA AMD --output-dir output/market_data
+
+# Analyze sentiment with LLM
+./vuts analyze --data-dir output --max-articles 10 --market-data-dir output/market_data
+
+# View results
+find output/llm_scores -name "*_score.json" | head -5
+```
+
+#### Alternative: Direct Script Calls
+
 ```bash
 cd scratch
 
 # Fetch news articles
 python src/fetching/financial_news_collector_async.py \
-    example_data/copilot-gpt5-cfg.json output
+    --config example_data/copilot-gpt5-cfg.json --output_dir output
 
 # Fetch market data (optional but recommended)
 python src/market/data_fetcher.py TSLA MSFT NVIDIA AMD \
@@ -102,6 +122,7 @@ vuts/
 │   ├── Workflow_Guide.md
 │   └── Development_Outline.md
 ├── scratch/                       # Main application code
+│   ├── vuts                       # Centralized CLI entrypoint
 │   ├── src/
 │   │   ├── fetching/             # News collection module
 │   │   │   └── financial_news_collector_async.py
@@ -112,7 +133,8 @@ vuts/
 │   │   ├── market/               # Market data module
 │   │   │   └── data_fetcher.py
 │   │   ├── tests/                # Test suite
-│   │   │   └── test_llm_analyzer.py
+│   │   │   ├── test_llm_analyzer.py
+│   │   │   └── test_vuts_entrypoint.py
 │   │   └── utils/                # Shared utilities
 │   ├── example_data/             # Configuration examples
 │   ├── demo_workflow.py          # Interactive demo
@@ -120,8 +142,37 @@ vuts/
 └── chats/                        # Development notes and chat logs
 ```
 
+## 💻 CLI Usage
+
+The `vuts` command provides a unified interface to all functionality:
+
+```bash
+# Get help
+./vuts --help
+# or
+python vuts --help
+
+# Fetch news articles
+./vuts fetch --config <config.json> --output-dir <output>
+
+# Analyze sentiment
+./vuts analyze --data-dir <data> --max-articles <n> [--market-data-dir <market>]
+
+# Fetch market data
+./vuts market <SYMBOL1> <SYMBOL2> ... [--days <n>] [--output-dir <dir>]
+```
+
+**Command Details:**
+
+- **fetch**: Collects news articles from multiple sources (Google News, Bing, Finnhub, etc.)
+- **analyze**: Performs LLM-powered sentiment analysis on collected articles
+- **market**: Fetches historical market data from Yahoo Finance for context
+
+For detailed options, use `./vuts <command> --help`
+
 ## 🔑 Key Features
 
+✅ **Centralized CLI** - Single `vuts` command for all operations  
 ✅ **Multi-Source News Fetching** - Aggregates from Google News RSS, Bing News, Finnhub  
 ✅ **LLM-Powered Sentiment Analysis** - Uses OpenAI GPT models for accurate scoring  
 ✅ **Market Context Integration** - Includes historical price data for better analysis  
@@ -149,7 +200,12 @@ vuts/
 
 ```bash
 cd scratch
+
+# Test LLM analyzer functionality
 python src/tests/test_llm_analyzer.py
+
+# Test vuts CLI entrypoint
+python src/tests/test_vuts_entrypoint.py
 ```
 
 All tests run without requiring API keys and validate:
@@ -157,6 +213,7 @@ All tests run without requiring API keys and validate:
 - LLM response parsing
 - Article discovery and filtering
 - Score saving and validation
+- CLI entrypoint and subcommand routing
 
 ## 💰 Cost Estimation
 

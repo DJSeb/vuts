@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""
+VUTS - Centralized entrypoint for financial news analysis system
+
+Usage:
+    vuts fetch --config <config_file> [--output-dir <dir>]
+    vuts analyze --data-dir <dir> [options...]
+    vuts market <symbols> [options...]
+    
+Examples:
+    vuts fetch --config example_data/copilot-gpt5-cfg.json --output-dir output
+    vuts analyze --data-dir output --max-articles 10
+    vuts market TSLA MSFT --days 30 --output-dir output/market_data
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+# Add src directory to path
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="vuts",
+        description="VUTS - AI Stock News Analyzer",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  vuts fetch --config example_data/copilot-gpt5-cfg.json --output-dir output
+  vuts analyze --data-dir output --max-articles 10 --market-data-dir output/market_data
+  vuts market TSLA MSFT NVIDIA --days 30 --output-dir output/market_data
+        """
+    )
+    
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+        help="Available commands"
+    )
+    
+    # ========================================================================
+    # FETCH subcommand
+    # ========================================================================
+    fetch_parser = subparsers.add_parser(
+        "fetch",
+        help="Fetch financial news articles from multiple sources"
+    )
+    fetch_parser.add_argument(
+        "--config",
+        required=True,
+        help="Path to JSON configuration file"
+    )
+    fetch_parser.add_argument(
+        "--output-dir",
+        help="Output directory for fetched articles (default: current directory)"
+    )
+    
+    # ========================================================================
+    # ANALYZE subcommand
+    # ========================================================================
+    analyze_parser = subparsers.add_parser(
+        "analyze",
+        help="Analyze article sentiment using LLM"
+    )
+    analyze_parser.add_argument(
+        "--data-dir",
+        type=str,
+        default=".",
+        help="Base directory containing fetched article data (default: current directory)"
+    )
+    analyze_parser.add_argument(
+        "--prompt-file",
+        type=str,
+        default="sentiment_prompt.txt",
+        help="Path to the LLM prompt template file"
+    )
+    analyze_parser.add_argument(
+        "--max-age-days",
+        type=int,
+        default=1,
+        help="Maximum age of articles to process in days (default: 1)"
+    )
+    analyze_parser.add_argument(
+        "--max-articles",
+        type=int,
+        default=10,
+        help="Maximum number of articles to process (default: 10)"
+    )
+    analyze_parser.add_argument(
+        "--model",
+        type=str,
+        default="gpt-4o-mini",
+        help="OpenAI model to use (default: gpt-4o-mini)"
+    )
+    analyze_parser.add_argument(
+        "--market-data-dir",
+        type=str,
+        help="Directory containing market data for context (optional)"
+    )
+    
+    # ========================================================================
+    # MARKET subcommand
+    # ========================================================================
+    market_parser = subparsers.add_parser(
+        "market",
+        help="Fetch historical market data for stock symbols"
+    )
+    market_parser.add_argument(
+        "symbols",
+        nargs="+",
+        help="Stock ticker symbols to fetch (e.g., TSLA MSFT AAPL)"
+    )
+    market_parser.add_argument(
+        "--days",
+        type=int,
+        default=30,
+        help="Number of days of historical data (default: 30)"
+    )
+    market_parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="market_data",
+        help="Directory to save market data (default: market_data)"
+    )
+    market_parser.add_argument(
+        "--use-cache",
+        action="store_true",
+        help="Use cached data if available and recent (< 24h old)"
+    )
+    market_parser.add_argument(
+        "--show-context",
+        action="store_true",
+        help="Display formatted market context for LLM"
+    )
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    # Execute appropriate command
+    if args.command == "fetch":
+        from fetching.financial_news_collector_async import main as fetch_main
+        # Replace sys.argv with fetch arguments
+        sys.argv = ["financial_news_collector_async.py", "--config", args.config]
+        if args.output_dir:
+            sys.argv.extend(["--output_dir", args.output_dir])
+        return fetch_main()
+        
+    elif args.command == "analyze":
+        from llm.sentiment_analyzer import main as analyze_main
+        # Replace sys.argv with analyze arguments
+        sys.argv = [
+            "sentiment_analyzer.py",
+            "--data-dir", args.data_dir,
+            "--prompt-file", args.prompt_file,
+            "--max-age-days", str(args.max_age_days),
+            "--max-articles", str(args.max_articles),
+            "--model", args.model
+        ]
+        if args.market_data_dir:
+            sys.argv.extend(["--market-data-dir", args.market_data_dir])
+        return analyze_main()
+        
+    elif args.command == "market":
+        from market.data_fetcher import main as market_main
+        # Replace sys.argv with market arguments
+        sys.argv = ["data_fetcher.py"] + args.symbols
+        sys.argv.extend(["--days", str(args.days)])
+        sys.argv.extend(["--output-dir", args.output_dir])
+        if args.use_cache:
+            sys.argv.append("--use-cache")
+        if args.show_context:
+            sys.argv.append("--show-context")
+        return market_main()
+    
+    else:
+        parser.print_help()
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
