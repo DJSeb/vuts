@@ -8,6 +8,8 @@ browse article history by topic, and manage system configurations.
 import os
 import sys
 import json
+import subprocess
+import shlex
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
@@ -278,6 +280,103 @@ def api_topic_detail(topic: str):
         'scores': topic_scores[topic],
         'summary': calculate_topic_summary(topic_scores[topic])
     })
+
+
+@app.route('/api/execute', methods=['POST'])
+def api_execute_command():
+    """API endpoint to execute vuts commands."""
+    try:
+        data = request.get_json()
+        command = data.get('command')
+        args = data.get('args', {})
+        
+        if not command:
+            return jsonify({'success': False, 'error': 'No command specified'}), 400
+        
+        # Validate command
+        valid_commands = ['fetch', 'analyze', 'market']
+        if command not in valid_commands:
+            return jsonify({'success': False, 'error': f'Invalid command: {command}'}), 400
+        
+        # Build vuts command
+        vuts_path = Path(__file__).parent.parent.parent / "vuts"
+        cmd = [str(vuts_path), command]
+        
+        # Add command-specific arguments
+        if command == 'fetch':
+            config_path = args.get('config')
+            output_dir = args.get('output_dir', 'output')
+            
+            if not config_path:
+                return jsonify({'success': False, 'error': 'Config file is required for fetch command'}), 400
+            
+            # Resolve config path relative to scratch directory
+            config_full_path = Path(__file__).parent.parent.parent / config_path
+            if not config_full_path.exists():
+                return jsonify({'success': False, 'error': f'Config file not found: {config_path}'}), 400
+            
+            cmd.extend(['--config', str(config_full_path)])
+            if output_dir:
+                output_full_path = Path(__file__).parent.parent.parent / output_dir
+                cmd.extend(['--output-dir', str(output_full_path)])
+        
+        elif command == 'analyze':
+            data_dir = args.get('data_dir', 'output')
+            max_articles = args.get('max_articles', 10)
+            model = args.get('model', 'gpt-4o-mini')
+            market_data_dir = args.get('market_data_dir', '')
+            
+            data_full_path = Path(__file__).parent.parent.parent / data_dir
+            cmd.extend(['--data-dir', str(data_full_path)])
+            cmd.extend(['--max-articles', str(max_articles)])
+            cmd.extend(['--model', model])
+            
+            if market_data_dir:
+                market_full_path = Path(__file__).parent.parent.parent / market_data_dir
+                cmd.extend(['--market-data-dir', str(market_full_path)])
+        
+        elif command == 'market':
+            symbols = args.get('symbols', '')
+            days = args.get('days', 30)
+            output_dir = args.get('output_dir', 'output/market_data')
+            
+            if not symbols:
+                return jsonify({'success': False, 'error': 'Stock symbols are required for market command'}), 400
+            
+            # Split symbols by comma or space
+            symbol_list = [s.strip().upper() for s in symbols.replace(',', ' ').split() if s.strip()]
+            if not symbol_list:
+                return jsonify({'success': False, 'error': 'No valid stock symbols provided'}), 400
+            
+            cmd.extend(symbol_list)
+            cmd.extend(['--days', str(days)])
+            
+            output_full_path = Path(__file__).parent.parent.parent / output_dir
+            cmd.extend(['--output-dir', str(output_full_path)])
+        
+        # Execute command
+        print(f"Executing command: {' '.join(cmd)}")
+        
+        # Run command and capture output
+        result = subprocess.run(
+            cmd,
+            cwd=str(Path(__file__).parent.parent.parent),
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        return jsonify({
+            'success': result.returncode == 0,
+            'output': result.stdout,
+            'error': result.stderr if result.returncode != 0 else None,
+            'returncode': result.returncode
+        })
+    
+    except subprocess.TimeoutExpired:
+        return jsonify({'success': False, 'error': 'Command execution timed out (5 minutes)'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.template_filter('format_datetime')

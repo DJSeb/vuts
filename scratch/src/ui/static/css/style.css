@@ -830,3 +830,119 @@ footer code {
         width: 100%;
     }
 }
+
+/* Execution forms */
+.execution-forms {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.execution-card {
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    padding: 1.5rem;
+    background: var(--bg-color);
+}
+
+.execution-card h4 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.execution-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: var(--card-bg);
+    color: var(--text-color);
+    transition: border-color 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group small {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.execution-form button[type="submit"] {
+    align-self: flex-start;
+    margin-top: 0.5rem;
+}
+
+.execution-form button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.output-display {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+.output-display h5 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.output-display.output-success {
+    border-color: var(--success-color);
+    background: #d1fae5;
+}
+
+.output-display.output-error {
+    border-color: var(--danger-color);
+    background: #fee2e2;
+}
+
+.output-display .output-content {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.output-display.output-error .output-content {
+    color: #fca5a5;
+}
+
