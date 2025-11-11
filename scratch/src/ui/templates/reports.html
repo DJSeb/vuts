@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Reports Overview - VUTS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📊 Reports Overview</h2>
+    <p class="subtitle">Summary of sentiment analysis across all topics</p>
+</div>
+
+{% if topics %}
+<div class="topics-grid">
+    {% for topic in topics %}
+    <div class="topic-card">
+        <div class="topic-header">
+            <h3>{{ topic }}</h3>
+            <span class="badge {{ topic_summaries[topic].sentiment | replace(' ', '-') }}">
+                {{ topic_summaries[topic].sentiment }}
+            </span>
+        </div>
+        
+        <div class="topic-stats">
+            <div class="stat">
+                <span class="label">Articles</span>
+                <span class="value">{{ topic_summaries[topic].count }}</span>
+            </div>
+            <div class="stat">
+                <span class="label">Average Score</span>
+                <span class="value score-{{ topic_summaries[topic].avg_score | sentiment_color }}">
+                    {{ topic_summaries[topic].avg_score | abs | round(2) | string }}
+                    {{ topic_summaries[topic].avg_score | score_arrow }}
+                </span>
+            </div>
+            <div class="stat">
+                <span class="label">Latest Score</span>
+                <span class="value score-{{ topic_summaries[topic].latest_score | sentiment_color }}">
+                    {{ topic_summaries[topic].latest_score | abs | round(2) | string }}
+                    {{ topic_summaries[topic].latest_score | score_arrow }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="topic-actions">
+            <a href="{{ url_for('topic_detail', topic=topic) }}" class="btn btn-primary">View Details</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>No Reports Available</h3>
+    <p>No sentiment analysis data found in the data directory.</p>
+    <p>Try running the analysis workflow first:</p>
+    <pre><code>cd scratch
+python demo_workflow.py</code></pre>
+</div>
+{% endif %}
+{% endblock %}

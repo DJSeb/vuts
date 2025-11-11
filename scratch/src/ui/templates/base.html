@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VUTS - Stock News Analyzer{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1>🎯 VUTS</h1>
+                <span class="subtitle">Value Understanding Through Sentiment</span>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="{{ url_for('reports') }}" {% if request.endpoint == 'reports' %}class="active"{% endif %}>Reports</a></li>
+                <li><a href="{{ url_for('reports_topics') }}" {% if request.endpoint == 'reports_topics' %}class="active"{% endif %}>Topics</a></li>
+                <li><a href="{{ url_for('config_page') }}" {% if request.endpoint == 'config_page' %}class="active"{% endif %}>Config</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>VUTS - AI-Powered Stock News Analyzer | Data directory: <code>{{ data_dir or 'Not configured' }}</code></p>
+            <p class="disclaimer">⚠️ For research and educational purposes only. Not financial advice.</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Topics - VUTS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📈 Sentiment Analysis by Topic</h2>
+    <p class="subtitle">Detailed sentiment scores for each analyzed article</p>
+</div>
+
+{% if topic_scores %}
+    {% for topic, data in topic_scores.items() | sort %}
+    <div class="topic-section">
+        <div class="topic-section-header">
+            <div>
+                <h3>
+                    <a href="{{ url_for('topic_detail', topic=topic) }}">{{ topic }}</a>
+                </h3>
+                <span class="badge {{ data.summary.sentiment | replace(' ', '-') }}">
+                    {{ data.summary.sentiment }}
+                </span>
+                <span class="topic-meta">
+                    {{ data.summary.count }} articles | 
+                    Avg: <strong class="score-{{ data.summary.avg_score | sentiment_color }}">
+                        {{ data.summary.avg_score | round(2) }}
+                    </strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="articles-list">
+            {% for score in data.scores[:5] %}
+            <div class="article-card">
+                <div class="article-header">
+                    <div class="article-score score-{{ score.llm_score | sentiment_color }}">
+                        <span class="score-value">{{ score.llm_score | round(2) }}</span>
+                        <span class="score-arrow">{{ score.llm_score | score_arrow }}</span>
+                    </div>
+                    <div class="article-info">
+                        <h4>{{ score.title }}</h4>
+                        <div class="article-meta">
+                            <span class="date">{{ score.published_at | format_datetime }}</span>
+                            <span class="source">{{ score.source }}</span>
+                            {% if score.url %}
+                            <a href="{{ score.url }}" target="_blank" class="article-link">🔗 View original</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="article-explanation">
+                    {{ score.llm_explanation }}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if data.scores | length > 5 %}
+            <div class="view-more">
+                <a href="{{ url_for('topic_detail', topic=topic) }}" class="btn btn-secondary">
+                    View all {{ data.scores | length }} articles →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="empty-state">
+    <h3>No Topics Available</h3>
+    <p>No sentiment analysis data found in the data directory.</p>
+    <p>Run the analysis workflow to generate data:</p>
+    <pre><code>cd scratch
+python demo_workflow.py</code></pre>
+</div>
+{% endif %}
+{% endblock %}
