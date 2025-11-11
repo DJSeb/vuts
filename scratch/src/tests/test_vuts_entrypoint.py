@@ -35,7 +35,7 @@ def test_main_help():
     returncode, stdout, stderr = run_command([sys.executable, "vuts", "--help"])
     
     if returncode == 0:
-        if "fetch" in stdout and "analyze" in stdout and "market" in stdout:
+        if "fetch" in stdout and "analyze" in stdout and "market" in stdout and "ui" in stdout:
             print("✓ Main help displays all subcommands")
             return True
         else:
@@ -107,6 +107,26 @@ def test_market_help():
         return False
 
 
+def test_ui_help():
+    """Test that ui subcommand help works."""
+    print("\n" + "=" * 60)
+    print("TEST: UI Subcommand Help")
+    print("=" * 60)
+    
+    returncode, stdout, stderr = run_command([sys.executable, "vuts", "ui", "--help"])
+    
+    if returncode == 0:
+        if "--host" in stdout and "--port" in stdout and "--debug" in stdout:
+            print("✓ UI help displays expected arguments")
+            return True
+        else:
+            print("✗ UI help missing expected arguments")
+            return False
+    else:
+        print(f"✗ UI help failed with exit code {returncode}")
+        return False
+
+
 def test_invalid_command():
     """Test that invalid commands are handled properly."""
     print("\n" + "=" * 60)
@@ -135,6 +155,7 @@ def main():
         ("Fetch Help", test_fetch_help),
         ("Analyze Help", test_analyze_help),
         ("Market Help", test_market_help),
+        ("UI Help", test_ui_help),
         ("Invalid Command", test_invalid_command),
     ]
     
