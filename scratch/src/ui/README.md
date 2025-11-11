@@ -30,8 +30,20 @@ This creates sample sentiment analysis data without requiring API keys.
 
 ### 3. Start the Web Server
 
+**Using vuts command (recommended):**
 ```bash
 cd scratch
+../vuts ui
+```
+
+**Alternative methods:**
+```bash
+cd scratch
+
+# Quick launch script
+python run_ui.py
+
+# Direct script call
 python src/ui/app.py
 ```
 
@@ -48,6 +60,10 @@ Open your browser and navigate to:
 ## Command Line Options
 
 ```bash
+# Using vuts command (recommended)
+../vuts ui [OPTIONS]
+
+# Or direct script call
 python src/ui/app.py [OPTIONS]
 
 Options:
@@ -59,6 +75,25 @@ Options:
 
 ### Examples
 
+**Using vuts command:**
+```bash
+# Basic usage
+../vuts ui
+
+# Run on custom port
+../vuts ui --port 8080
+
+# Run with debug mode (auto-reloads on code changes)
+../vuts ui --debug
+
+# Use custom data directory
+../vuts ui --data-dir /path/to/data
+
+# Allow external connections
+../vuts ui --host 0.0.0.0 --port 5000
+```
+
+**Using direct script call:**
 ```bash
 # Run on custom port
 python src/ui/app.py --port 8080

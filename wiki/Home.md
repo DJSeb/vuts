@@ -32,6 +32,8 @@ VUTS is an AI-powered platform for analyzing financial news sentiment. It:
 ✅ Multi-source news aggregation  
 ✅ LLM-powered sentiment analysis  
 ✅ Market context integration  
+✅ Web UI for viewing reports and trends  
+✅ Centralized CLI with `vuts` command  
 ✅ Cost-efficient processing (~$0.0006 per article)  
 ✅ Smart caching and deduplication  
 ✅ Comprehensive test suite  
@@ -42,10 +44,12 @@ VUTS is an AI-powered platform for analyzing financial news sentiment. It:
 vuts/
 ├── docs/              # Main documentation
 ├── scratch/           # Application code
+│   ├── vuts           # Centralized CLI entrypoint
 │   ├── src/
 │   │   ├── fetching/  # News collection
 │   │   ├── llm/       # Sentiment analysis
 │   │   ├── market/    # Market data
+│   │   ├── ui/        # Web interface
 │   │   ├── tests/     # Test suite
 │   │   └── utils/     # Shared utilities
 │   └── demo_workflow.py

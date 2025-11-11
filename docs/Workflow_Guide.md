@@ -101,7 +101,38 @@ python src/llm/sentiment_analyzer.py --data-dir output --max-age-days 1 --max-ar
 
 ### Step 4: View Results
 
-Check the sentiment scores:
+#### Option 1: Using the Web UI (Recommended)
+
+Launch the web interface to view and explore sentiment analysis results:
+
+```bash
+cd scratch
+
+# Using vuts command
+../vuts ui
+
+# With custom port
+../vuts ui --port 8080
+
+# With debug mode (auto-reload on changes)
+../vuts ui --debug
+
+# With custom data directory
+../vuts ui --data-dir /path/to/data
+
+# Allow external connections
+../vuts ui --host 0.0.0.0 --port 5000
+```
+
+Then open your browser to `http://localhost:5000` (or your specified port) to:
+- View all topics and sentiment trends on the reports dashboard
+- Browse detailed article analysis at `/reports/topics`
+- Manage configurations and workflow commands at `/config`
+- Access JSON API endpoints at `/api/topics`
+
+#### Option 2: Using Command Line
+
+Check the sentiment scores directly:
 
 ```bash
 # List all score files

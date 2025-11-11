@@ -91,6 +91,13 @@ python src/llm/sentiment_analyzer.py \
 
 ### Step 4: View Results
 
+**Using Web UI (Recommended):**
+```bash
+../vuts ui
+# Then open http://localhost:5000 in your browser
+```
+
+**Using Command Line:**
 ```bash
 # List all scores
 find output/llm_scores -name "*_score.json"
