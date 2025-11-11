@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 # Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from llm.sentiment_analyzer import (
     load_prompt_template,
@@ -279,7 +279,7 @@ def main():
     demo_dir.mkdir(exist_ok=True)
     
     # Load prompt template
-    prompt_file = Path(__file__).parent / "src" / "llm" / "sentiment_prompt.txt"
+    prompt_file = Path(__file__).parent.parent / "src" / "llm" / "sentiment_prompt.txt"
     prompt_template = load_prompt_template(prompt_file)
     
     # Create demo data

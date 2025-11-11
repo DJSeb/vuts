@@ -1,0 +1,9 @@
+{
+  "source": "demo_source",
+  "topic": "TSLA",
+  "title": "Tesla Recalls 500,000 Vehicles Over Safety Concerns",
+  "url": "https://example.com/article2",
+  "published_at": "2025-11-11T08:09:40.734779+00:00",
+  "content": "Tesla is recalling approximately 500,000 vehicles in the United States due to a \nsoftware issue that could affect the rearview camera display. The National Highway \nTraffic Safety Administration (NHTSA) announced the recall today, affecting Model 3 \nand Model Y vehicles manufactured between 2022 and 2024.\n\nAccording to NHTSA documents, the rearview camera image may not display immediately \nwhen shifting into reverse, increasing the risk of a crash. This is the third major \nrecall for Tesla this year, raising questions about the company's quality control \nprocesses.\n\nConsumer advocacy groups have criticized Tesla's approach to vehicle safety, noting \nthat while the issue can be fixed through an over-the-air software update, the \nfrequency of recalls is concerning. \"Tesla needs to prioritize safety over rapid \nfeature deployment,\" said a spokesperson for the Center for Auto Safety.\n\nTesla stock declined 2.3% in after-hours trading following the announcement.",
+  "score": -0.4
+}

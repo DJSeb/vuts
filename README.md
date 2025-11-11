@@ -40,14 +40,25 @@ cd scratch
 pip install -r requirements.txt
 ```
 
-### 2. Try the Demo (No API Keys Required)
+### 2. Try the Demos
 
+**Demo 1: Mock Workflow (No API Keys Required)**
 ```bash
 cd scratch
-python demo_workflow.py
+python demos/demo_workflow.py
 ```
 
 This creates mock data and demonstrates the complete workflow without needing any API keys.
+
+**Demo 2: OpenAI API Demo (Requires OpenAI API Key)**
+```bash
+cd scratch
+export OPENAI_API_KEY="your-openai-api-key"
+python demos/demo_openai_api.py
+```
+
+This generates articles about AMD, Nvidia, and Broadcom, then analyzes them using the OpenAI API.
+Estimated cost: ~$0.01 (less than 2 cents for all articles).
 
 ### 3. Set Up for Real Data
 
@@ -161,8 +172,10 @@ vuts/
 │   │   │   ├── test_llm_analyzer.py
 │   │   │   └── test_vuts_entrypoint.py
 │   │   └── utils/                # Shared utilities
+│   ├── demos/                     # Demo applications
+│   │   ├── demo_workflow.py       # Mock workflow demo (no API keys)
+│   │   └── demo_openai_api.py     # OpenAI API demo (requires key)
 │   ├── example_data/             # Configuration examples
-│   ├── demo_workflow.py          # Interactive demo
 │   ├── run_ui.py                 # Web UI launcher
 │   └── requirements.txt          # Python dependencies
 └── chats/                        # Development notes and chat logs

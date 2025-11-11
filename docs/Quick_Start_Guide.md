@@ -11,7 +11,8 @@ This system analyzes financial news articles using Large Language Models (LLMs).
 
 ### Testing & Demo
 - **`scratch/src/tests/test_llm_analyzer.py`** (8.7KB) - Test suite for validation
-- **`scratch/demo_workflow.py`** (12KB) - Interactive demo (no API keys required)
+- **`scratch/demos/demo_workflow.py`** (12KB) - Mock workflow demo (no API keys required)
+- **`scratch/demos/demo_openai_api.py`** (31KB) - OpenAI API demo with AMD/Nvidia/Broadcom articles
 
 ### Documentation
 - **`docs/Workflow_Guide.md`** (8.4KB) - Complete usage guide with examples
@@ -25,13 +26,25 @@ cd scratch
 pip install -r requirements.txt
 ```
 
-### 2. Try the Demo (No API Keys Needed)
+### 2. Try the Demos
+
+**Demo 1: Mock Workflow (No API Keys Needed)**
 ```bash
 cd scratch
-python demo_workflow.py
+python demos/demo_workflow.py
 ```
 
 This creates mock articles and demonstrates the complete workflow.
+
+**Demo 2: OpenAI API (Requires API Key)**
+```bash
+cd scratch
+export OPENAI_API_KEY="your-key-here"
+python demos/demo_openai_api.py
+```
+
+This generates and analyzes articles about AMD, Nvidia, and Broadcom using the real OpenAI API.
+Estimated cost: ~$0.01 (less than 2 cents).
 
 ### 3. Run with Real Data
 
@@ -141,7 +154,7 @@ Using gpt-4o-mini (recommended):
 **No articles found?**
 - Check `--max-age-days` parameter
 - Verify articles have `content` field
-- Run demo to test: `python demo_workflow.py`
+- Run demo to test: `python demos/demo_workflow.py`
 
 **API errors?**
 - Verify `OPENAI_API_KEY` is set
@@ -156,7 +169,7 @@ Using gpt-4o-mini (recommended):
 ## Next Steps
 
 1. **Read** `docs/Workflow_Guide.md` for detailed examples
-2. **Run** `cd scratch && python demo_workflow.py` to see it in action
+2. **Run** `cd scratch && python demos/demo_workflow.py` to see it in action
 3. **Test** with 1-2 real articles first
 4. **Scale** up to larger batches once validated
 
@@ -165,7 +178,7 @@ Using gpt-4o-mini (recommended):
 - Main Guide: `docs/Workflow_Guide.md`
 - LLM Details: `scratch/src/llm/README.md`
 - Test Suite: `cd scratch && python src/tests/test_llm_analyzer.py`
-- Demo: `cd scratch && python demo_workflow.py`
+- Demos: `cd scratch && python demos/demo_workflow.py` or `python demos/demo_openai_api.py`
 
 ---
 
