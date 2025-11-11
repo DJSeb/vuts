@@ -8,6 +8,8 @@ browse article history by topic, and manage system configurations.
 import os
 import sys
 import json
+import subprocess
+import shlex
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
@@ -278,6 +280,177 @@ def api_topic_detail(topic: str):
         'scores': topic_scores[topic],
         'summary': calculate_topic_summary(topic_scores[topic])
     })
+
+
+@app.route('/api/execute', methods=['POST'])
+def api_execute_command():
+    """API endpoint to execute vuts commands."""
+    try:
+        data = request.get_json()
+        command = data.get('command')
+        args = data.get('args', {})
+        
+        if not command:
+            return jsonify({'success': False, 'error': 'No command specified'}), 400
+        
+        # Validate command
+        valid_commands = ['fetch', 'analyze', 'market']
+        if command not in valid_commands:
+            return jsonify({'success': False, 'error': f'Invalid command: {command}'}), 400
+        
+        # Build vuts command
+        vuts_path = Path(__file__).parent.parent.parent / "vuts"
+        base_dir = Path(__file__).parent.parent.parent
+        cmd = [str(vuts_path), command]
+        
+        # Helper function to validate and resolve paths safely
+        def safe_resolve_path(user_path: str, must_exist: bool = False) -> Path:
+            """
+            Safely resolve a user-provided path relative to base directory.
+            
+            This function prevents path traversal attacks by:
+            1. Removing '..' from paths
+            2. Rejecting absolute paths
+            3. Ensuring resolved path stays within base directory
+            
+            Returns: Validated Path object within base directory
+            Raises: ValueError if path is invalid or escapes base directory
+            """
+            # Sanitize path: remove traversal attempts and whitespace
+            sanitized = str(user_path).replace('..', '').strip()
+            if not sanitized or sanitized.startswith('/'):
+                raise ValueError("Invalid path format")
+            
+            # Resolve relative to base directory and get absolute path
+            # This is safe because we've removed '..' and validated format
+            resolved = (base_dir / sanitized).resolve()
+            base_resolved = base_dir.resolve()
+            
+            # Security check: ensure path is within base directory
+            # This prevents escaping even if there are symbolic links
+            if not str(resolved).startswith(str(base_resolved)):
+                raise ValueError("Path validation failed")
+            
+            # Check existence if required
+            if must_exist and not resolved.exists():
+                raise ValueError("Path does not exist")
+            
+            return resolved
+        
+        # Add command-specific arguments
+        if command == 'fetch':
+            config_path = args.get('config')
+            output_dir = args.get('output_dir', 'output')
+            
+            if not config_path:
+                return jsonify({'success': False, 'error': 'Config file is required for fetch command'}), 400
+            
+            try:
+                config_full_path = safe_resolve_path(config_path, must_exist=True)
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Invalid or inaccessible config file path'}), 400
+            
+            cmd.extend(['--config', str(config_full_path)])
+            if output_dir:
+                try:
+                    output_full_path = safe_resolve_path(output_dir, must_exist=False)
+                    cmd.extend(['--output-dir', str(output_full_path)])
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid output directory path'}), 400
+        
+        elif command == 'analyze':
+            data_dir = args.get('data_dir', 'output')
+            max_articles = args.get('max_articles', 10)
+            model = args.get('model', 'gpt-4o-mini')
+            market_data_dir = args.get('market_data_dir', '')
+            
+            try:
+                data_full_path = safe_resolve_path(data_dir, must_exist=False)
+                cmd.extend(['--data-dir', str(data_full_path)])
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Invalid data directory path'}), 400
+            
+            # Validate max_articles is a positive integer
+            try:
+                max_articles = int(max_articles)
+                if max_articles < 1:
+                    raise ValueError()
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'Max articles must be a positive integer'}), 400
+            
+            cmd.extend(['--max-articles', str(max_articles)])
+            
+            # Validate model name (whitelist approach)
+            valid_models = ['gpt-4o-mini', 'gpt-4o', 'gpt-4', 'gpt-3.5-turbo']
+            if model not in valid_models:
+                return jsonify({'success': False, 'error': f'Invalid model: {model}'}), 400
+            cmd.extend(['--model', model])
+            
+            if market_data_dir:
+                try:
+                    market_full_path = safe_resolve_path(market_data_dir, must_exist=False)
+                    cmd.extend(['--market-data-dir', str(market_full_path)])
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid market data directory path'}), 400
+        
+        elif command == 'market':
+            symbols = args.get('symbols', '')
+            days = args.get('days', 30)
+            output_dir = args.get('output_dir', 'output/market_data')
+            
+            if not symbols:
+                return jsonify({'success': False, 'error': 'Stock symbols are required for market command'}), 400
+            
+            # Split symbols by comma or space and validate format
+            symbol_list = [s.strip().upper() for s in symbols.replace(',', ' ').split() if s.strip()]
+            # Validate symbols contain only alphanumeric characters
+            if not symbol_list or not all(s.replace('-', '').replace('.', '').isalnum() for s in symbol_list):
+                return jsonify({'success': False, 'error': 'No valid stock symbols provided'}), 400
+            
+            cmd.extend(symbol_list)
+            
+            # Validate days is a positive integer in reasonable range
+            try:
+                days = int(days)
+                if days < 1 or days > 365:
+                    raise ValueError()
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'Days must be between 1 and 365'}), 400
+            
+            cmd.extend(['--days', str(days)])
+            
+            try:
+                output_full_path = safe_resolve_path(output_dir, must_exist=False)
+                cmd.extend(['--output-dir', str(output_full_path)])
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Invalid output directory path'}), 400
+        
+        # Execute command
+        print(f"Executing command: {' '.join(cmd)}")
+        
+        # Run command and capture output (shell=False by default, which is secure)
+        result = subprocess.run(
+            cmd,
+            cwd=str(base_dir),
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 minute timeout
+            shell=False   # Explicitly disable shell for security
+        )
+        
+        return jsonify({
+            'success': result.returncode == 0,
+            'output': result.stdout,
+            'error': result.stderr if result.returncode != 0 else None,
+            'returncode': result.returncode
+        })
+    
+    except subprocess.TimeoutExpired:
+        return jsonify({'success': False, 'error': 'Command execution timed out (5 minutes)'}), 500
+    except Exception as e:
+        # Don't expose detailed error messages that might leak system information
+        print(f"Error executing command: {e}")
+        return jsonify({'success': False, 'error': 'An error occurred while executing the command'}), 500
 
 
 @app.template_filter('format_datetime')

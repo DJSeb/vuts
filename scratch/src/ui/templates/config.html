@@ -90,7 +90,120 @@
     </section>
 
     <section class="config-section">
-        <h3>🔧 Workflow Commands</h3>
+        <h3>▶️ Execute Commands</h3>
+        <p class="subtitle">Run vuts commands directly from the UI</p>
+        
+        <div class="execution-forms">
+            <!-- Fetch Command Form -->
+            <div class="execution-card">
+                <h4>1. Fetch News Articles</h4>
+                <form id="fetch-form" class="execution-form">
+                    <div class="form-group">
+                        <label for="fetch-config">Configuration File:</label>
+                        <input type="text" id="fetch-config" name="config" 
+                               value="example_data/copilot-gpt5-cfg.json" required>
+                        <small>Path relative to scratch directory</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="fetch-output">Output Directory:</label>
+                        <input type="text" id="fetch-output" name="output_dir" 
+                               value="output" required>
+                        <small>Directory where articles will be saved</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Fetch Articles</span>
+                        <span class="btn-loading" style="display:none;">⏳ Running...</span>
+                    </button>
+                </form>
+                <div id="fetch-output-display" class="output-display" style="display:none;">
+                    <h5>Output:</h5>
+                    <pre class="output-content"></pre>
+                </div>
+            </div>
+
+            <!-- Market Command Form -->
+            <div class="execution-card">
+                <h4>2. Fetch Market Data</h4>
+                <form id="market-form" class="execution-form">
+                    <div class="form-group">
+                        <label for="market-symbols">Stock Symbols:</label>
+                        <input type="text" id="market-symbols" name="symbols" 
+                               value="TSLA MSFT NVIDIA AMD" required>
+                        <small>Space or comma separated (e.g., TSLA, MSFT, NVIDIA)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="market-days">Days of History:</label>
+                        <input type="number" id="market-days" name="days" 
+                               value="30" min="1" max="365" required>
+                        <small>Number of days of historical data (1-365)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="market-output">Output Directory:</label>
+                        <input type="text" id="market-output" name="output_dir" 
+                               value="output/market_data" required>
+                        <small>Directory where market data will be saved</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Fetch Market Data</span>
+                        <span class="btn-loading" style="display:none;">⏳ Running...</span>
+                    </button>
+                </form>
+                <div id="market-output-display" class="output-display" style="display:none;">
+                    <h5>Output:</h5>
+                    <pre class="output-content"></pre>
+                </div>
+            </div>
+
+            <!-- Analyze Command Form -->
+            <div class="execution-card">
+                <h4>3. Analyze Sentiment</h4>
+                <form id="analyze-form" class="execution-form">
+                    <div class="form-group">
+                        <label for="analyze-data-dir">Data Directory:</label>
+                        <input type="text" id="analyze-data-dir" name="data_dir" 
+                               value="output" required>
+                        <small>Directory containing fetched articles</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="analyze-max-articles">Max Articles:</label>
+                        <input type="number" id="analyze-max-articles" name="max_articles" 
+                               value="10" min="1" required>
+                        <small>Maximum number of articles to analyze</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="analyze-model">LLM Model:</label>
+                        <select id="analyze-model" name="model" required>
+                            <option value="gpt-4o-mini" selected>gpt-4o-mini (recommended)</option>
+                            <option value="gpt-4o">gpt-4o</option>
+                            <option value="gpt-4">gpt-4</option>
+                            <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                        </select>
+                        <small>OpenAI model to use for analysis</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="analyze-market-data">Market Data Directory (Optional):</label>
+                        <input type="text" id="analyze-market-data" name="market_data_dir" 
+                               value="output/market_data">
+                        <small>Leave empty if no market data available</small>
+                    </div>
+                    <div class="alert alert-warning">
+                        ⚠️ Requires <code>OPENAI_API_KEY</code> environment variable
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Analyze Sentiment</span>
+                        <span class="btn-loading" style="display:none;">⏳ Running...</span>
+                    </button>
+                </form>
+                <div id="analyze-output-display" class="output-display" style="display:none;">
+                    <h5>Output:</h5>
+                    <pre class="output-content"></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="config-section">
+        <h3>🔧 Workflow Commands (CLI Reference)</h3>
         <div class="workflow-commands">
             <div class="command-card">
                 <h4>1. Fetch News Articles</h4>
@@ -168,4 +281,88 @@ python demo_workflow.py</code></pre>
         </div>
     </section>
 </div>
+
+<script>
+// Handle form submissions for command execution
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = {
+        'fetch': document.getElementById('fetch-form'),
+        'market': document.getElementById('market-form'),
+        'analyze': document.getElementById('analyze-form')
+    };
+
+    Object.keys(forms).forEach(command => {
+        const form = forms[command];
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = form.querySelector('button[type="submit"]');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+            const outputDisplay = document.getElementById(`${command}-output-display`);
+            const outputContent = outputDisplay.querySelector('.output-content');
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            
+            // Clear previous output
+            outputDisplay.style.display = 'none';
+            outputContent.textContent = '';
+            
+            // Collect form data
+            const formData = new FormData(form);
+            const args = {};
+            for (const [key, value] of formData.entries()) {
+                args[key] = value;
+            }
+            
+            try {
+                // Send request to execute command
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        command: command,
+                        args: args
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Display output
+                outputDisplay.style.display = 'block';
+                
+                if (result.success) {
+                    outputContent.textContent = result.output || 'Command completed successfully!';
+                    outputDisplay.classList.remove('output-error');
+                    outputDisplay.classList.add('output-success');
+                } else {
+                    const errorText = result.error || result.output || 'Unknown error occurred';
+                    outputContent.textContent = `Error: ${errorText}`;
+                    outputDisplay.classList.remove('output-success');
+                    outputDisplay.classList.add('output-error');
+                }
+            } catch (error) {
+                // Display error
+                outputDisplay.style.display = 'block';
+                outputContent.textContent = `Error: ${error.message}`;
+                outputDisplay.classList.remove('output-success');
+                outputDisplay.classList.add('output-error');
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}
