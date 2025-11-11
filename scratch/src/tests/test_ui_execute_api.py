@@ -81,7 +81,7 @@ def test_execute_api_command_building():
                                content_type='application/json')
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'Config file not found' in data['error']
+        assert 'does not exist' in data['error']
         print("✓ Non-existent config file properly rejected")
         
         # Test market with invalid symbols format
@@ -99,6 +99,68 @@ def test_execute_api_command_building():
         data = json.loads(response.data)
         assert 'No valid stock symbols' in data['error']
         print("✓ Empty symbols properly rejected")
+        
+        # Test path traversal attempt
+        response = client.post('/api/execute',
+                               json={
+                                   'command': 'analyze',
+                                   'args': {
+                                       'data_dir': '../../../etc',
+                                       'max_articles': 10
+                                   }
+                               },
+                               content_type='application/json')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'Invalid path' in data['error'] or 'error' in data
+        print("✓ Path traversal attempt properly rejected")
+        
+        # Test invalid model name
+        response = client.post('/api/execute',
+                               json={
+                                   'command': 'analyze',
+                                   'args': {
+                                       'data_dir': 'output',
+                                       'max_articles': 10,
+                                       'model': 'evil-model'
+                                   }
+                               },
+                               content_type='application/json')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'Invalid model' in data['error']
+        print("✓ Invalid model name properly rejected")
+        
+        # Test invalid max_articles
+        response = client.post('/api/execute',
+                               json={
+                                   'command': 'analyze',
+                                   'args': {
+                                       'data_dir': 'output',
+                                       'max_articles': -1
+                                   }
+                               },
+                               content_type='application/json')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'Max articles must be a positive integer' in data['error']
+        print("✓ Invalid max_articles properly rejected")
+        
+        # Test invalid days range
+        response = client.post('/api/execute',
+                               json={
+                                   'command': 'market',
+                                   'args': {
+                                       'symbols': 'TSLA',
+                                       'days': 999,
+                                       'output_dir': 'output/market_data'
+                                   }
+                               },
+                               content_type='application/json')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'Days must be between 1 and 365' in data['error']
+        print("✓ Invalid days range properly rejected")
 
 
 def run_all_tests():

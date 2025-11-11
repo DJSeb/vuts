@@ -300,7 +300,28 @@ def api_execute_command():
         
         # Build vuts command
         vuts_path = Path(__file__).parent.parent.parent / "vuts"
+        base_dir = Path(__file__).parent.parent.parent
         cmd = [str(vuts_path), command]
+        
+        # Helper function to validate and resolve paths safely
+        def safe_resolve_path(user_path: str, must_exist: bool = False) -> Path:
+            """Safely resolve a user-provided path relative to base directory."""
+            # Remove any path traversal attempts
+            user_path = str(user_path).replace('..', '').strip()
+            if not user_path or user_path.startswith('/'):
+                raise ValueError(f"Invalid path: {user_path}")
+            
+            # Resolve path relative to base directory
+            resolved = (base_dir / user_path).resolve()
+            
+            # Ensure the resolved path is within base directory
+            if not str(resolved).startswith(str(base_dir.resolve())):
+                raise ValueError(f"Path escapes base directory: {user_path}")
+            
+            if must_exist and not resolved.exists():
+                raise ValueError(f"Path does not exist: {user_path}")
+            
+            return resolved
         
         # Add command-specific arguments
         if command == 'fetch':
@@ -310,15 +331,18 @@ def api_execute_command():
             if not config_path:
                 return jsonify({'success': False, 'error': 'Config file is required for fetch command'}), 400
             
-            # Resolve config path relative to scratch directory
-            config_full_path = Path(__file__).parent.parent.parent / config_path
-            if not config_full_path.exists():
-                return jsonify({'success': False, 'error': f'Config file not found: {config_path}'}), 400
+            try:
+                config_full_path = safe_resolve_path(config_path, must_exist=True)
+            except ValueError as e:
+                return jsonify({'success': False, 'error': str(e)}), 400
             
             cmd.extend(['--config', str(config_full_path)])
             if output_dir:
-                output_full_path = Path(__file__).parent.parent.parent / output_dir
-                cmd.extend(['--output-dir', str(output_full_path)])
+                try:
+                    output_full_path = safe_resolve_path(output_dir, must_exist=False)
+                    cmd.extend(['--output-dir', str(output_full_path)])
+                except ValueError as e:
+                    return jsonify({'success': False, 'error': str(e)}), 400
         
         elif command == 'analyze':
             data_dir = args.get('data_dir', 'output')
@@ -326,14 +350,34 @@ def api_execute_command():
             model = args.get('model', 'gpt-4o-mini')
             market_data_dir = args.get('market_data_dir', '')
             
-            data_full_path = Path(__file__).parent.parent.parent / data_dir
-            cmd.extend(['--data-dir', str(data_full_path)])
+            try:
+                data_full_path = safe_resolve_path(data_dir, must_exist=False)
+                cmd.extend(['--data-dir', str(data_full_path)])
+            except ValueError as e:
+                return jsonify({'success': False, 'error': str(e)}), 400
+            
+            # Validate max_articles is a positive integer
+            try:
+                max_articles = int(max_articles)
+                if max_articles < 1:
+                    raise ValueError()
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'Max articles must be a positive integer'}), 400
+            
             cmd.extend(['--max-articles', str(max_articles)])
+            
+            # Validate model name (whitelist approach)
+            valid_models = ['gpt-4o-mini', 'gpt-4o', 'gpt-4', 'gpt-3.5-turbo']
+            if model not in valid_models:
+                return jsonify({'success': False, 'error': f'Invalid model: {model}'}), 400
             cmd.extend(['--model', model])
             
             if market_data_dir:
-                market_full_path = Path(__file__).parent.parent.parent / market_data_dir
-                cmd.extend(['--market-data-dir', str(market_full_path)])
+                try:
+                    market_full_path = safe_resolve_path(market_data_dir, must_exist=False)
+                    cmd.extend(['--market-data-dir', str(market_full_path)])
+                except ValueError as e:
+                    return jsonify({'success': False, 'error': str(e)}), 400
         
         elif command == 'market':
             symbols = args.get('symbols', '')
@@ -343,27 +387,41 @@ def api_execute_command():
             if not symbols:
                 return jsonify({'success': False, 'error': 'Stock symbols are required for market command'}), 400
             
-            # Split symbols by comma or space
+            # Split symbols by comma or space and validate format
             symbol_list = [s.strip().upper() for s in symbols.replace(',', ' ').split() if s.strip()]
-            if not symbol_list:
+            # Validate symbols contain only alphanumeric characters
+            if not symbol_list or not all(s.replace('-', '').replace('.', '').isalnum() for s in symbol_list):
                 return jsonify({'success': False, 'error': 'No valid stock symbols provided'}), 400
             
             cmd.extend(symbol_list)
+            
+            # Validate days is a positive integer in reasonable range
+            try:
+                days = int(days)
+                if days < 1 or days > 365:
+                    raise ValueError()
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'Days must be between 1 and 365'}), 400
+            
             cmd.extend(['--days', str(days)])
             
-            output_full_path = Path(__file__).parent.parent.parent / output_dir
-            cmd.extend(['--output-dir', str(output_full_path)])
+            try:
+                output_full_path = safe_resolve_path(output_dir, must_exist=False)
+                cmd.extend(['--output-dir', str(output_full_path)])
+            except ValueError as e:
+                return jsonify({'success': False, 'error': str(e)}), 400
         
         # Execute command
         print(f"Executing command: {' '.join(cmd)}")
         
-        # Run command and capture output
+        # Run command and capture output (shell=False by default, which is secure)
         result = subprocess.run(
             cmd,
-            cwd=str(Path(__file__).parent.parent.parent),
+            cwd=str(base_dir),
             capture_output=True,
             text=True,
-            timeout=300  # 5 minute timeout
+            timeout=300,  # 5 minute timeout
+            shell=False   # Explicitly disable shell for security
         )
         
         return jsonify({
@@ -376,7 +434,9 @@ def api_execute_command():
     except subprocess.TimeoutExpired:
         return jsonify({'success': False, 'error': 'Command execution timed out (5 minutes)'}), 500
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        # Don't expose detailed error messages that might leak system information
+        print(f"Error executing command: {e}")
+        return jsonify({'success': False, 'error': 'An error occurred while executing the command'}), 500
 
 
 @app.template_filter('format_datetime')
