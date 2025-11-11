@@ -104,6 +104,25 @@ python src/llm/sentiment_analyzer.py \
 find output/llm_scores -name "*_score.json" | head -5
 ```
 
+### 5. Launch the Web UI (Optional)
+
+```bash
+cd scratch
+
+# Quick launch
+python run_ui.py
+
+# Or with custom options
+python src/ui/app.py --host 0.0.0.0 --port 5000
+
+# Then open your browser to http://localhost:5000
+```
+
+The Web UI provides:
+- 📊 **Reports Dashboard** - Overview of all topics and sentiment trends
+- 📈 **Topics View** - Detailed article analysis at `/reports/topics`
+- ⚙️ **Configuration Page** - Manage settings and view workflow commands
+
 ## 📚 Documentation
 
 - **[Quick Start Guide](docs/Quick_Start_Guide.md)** - Get up and running in 5 minutes
@@ -111,6 +130,7 @@ find output/llm_scores -name "*_score.json" | head -5
 - **[Architecture Diagrams](docs/Architecture_Diagrams.md)** - Visual system diagrams and flow charts
 - **[Development Outline](docs/Development_Outline.md)** - Project architecture and future plans
 - **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation
+- **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation
 - **[Wiki Pages](wiki/)** - Comprehensive module documentation (ready for GitHub Wiki)
 
 ## 📁 Project Structure
@@ -132,12 +152,18 @@ vuts/
 │   │   │   └── README.md
 │   │   ├── market/               # Market data module
 │   │   │   └── data_fetcher.py
+│   │   ├── ui/                   # Web UI module
+│   │   │   ├── app.py            # Flask application
+│   │   │   ├── templates/        # HTML templates
+│   │   │   ├── static/           # CSS and assets
+│   │   │   └── README.md
 │   │   ├── tests/                # Test suite
 │   │   │   ├── test_llm_analyzer.py
 │   │   │   └── test_vuts_entrypoint.py
 │   │   └── utils/                # Shared utilities
 │   ├── example_data/             # Configuration examples
 │   ├── demo_workflow.py          # Interactive demo
+│   ├── run_ui.py                 # Web UI launcher
 │   └── requirements.txt          # Python dependencies
 └── chats/                        # Development notes and chat logs
 ```
@@ -178,6 +204,7 @@ For detailed options, use `./vuts <command> --help`
 ✅ **Market Context Integration** - Includes historical price data for better analysis  
 ✅ **Precise Scoring** - Score range from -10.00 to +10.00 with explanations  
 ✅ **Cost Efficient** - Uses gpt-4o-mini by default (~$0.0006 per article)  
+✅ **Web UI** - Browse reports, view sentiment trends, and manage configurations via browser  
 ✅ **Smart Caching** - Avoids re-analyzing articles and re-fetching data  
 ✅ **Async Operations** - Fast parallel processing of multiple sources  
 ✅ **Test Suite** - Comprehensive tests with no API keys required  
