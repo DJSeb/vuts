@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 ```bash
 cd scratch
-python demo_workflow.py
+python demos/demo_workflow.py
 ```
 
 This creates sample sentiment analysis data without requiring API keys.
@@ -231,7 +231,7 @@ CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "src.ui.app:app"]
 
 ### No Data Available
 If you see "No Reports Available":
-1. Run `python demo_workflow.py` to create sample data
+1. Run `python demos/demo_workflow.py` to create sample data
 2. Or run the full workflow to analyze real articles
 3. Check the data directory path in the footer
 
