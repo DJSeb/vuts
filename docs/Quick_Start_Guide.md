@@ -66,6 +66,15 @@ python src/llm/sentiment_analyzer.py \
 ```
 
 #### View Results
+
+**Using Web UI (Recommended):**
+```bash
+cd scratch
+../vuts ui
+# Then open http://localhost:5000 in your browser
+```
+
+**Using Command Line:**
 ```bash
 find output/llm_scores -name "*_score.json" | head -3
 ```

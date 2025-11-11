@@ -6,11 +6,13 @@ Usage:
     vuts fetch --config <config_file> [--output-dir <dir>]
     vuts analyze --data-dir <dir> [options...]
     vuts market <symbols> [options...]
+    vuts ui [--host <host>] [--port <port>] [--debug] [--data-dir <dir>]
     
 Examples:
     vuts fetch --config example_data/copilot-gpt5-cfg.json --output-dir output
     vuts analyze --data-dir output --max-articles 10
     vuts market TSLA MSFT --days 30 --output-dir output/market_data
+    vuts ui --port 8080 --debug
 """
 
 import sys
@@ -31,6 +33,7 @@ Examples:
   vuts fetch --config example_data/copilot-gpt5-cfg.json --output-dir output
   vuts analyze --data-dir output --max-articles 10 --market-data-dir output/market_data
   vuts market TSLA MSFT NVIDIA --days 30 --output-dir output/market_data
+  vuts ui --port 8080 --debug
         """
     )
     
@@ -135,6 +138,36 @@ Examples:
         help="Display formatted market context for LLM"
     )
     
+    # ========================================================================
+    # UI subcommand
+    # ========================================================================
+    ui_parser = subparsers.add_parser(
+        "ui",
+        help="Launch the web UI for viewing sentiment analysis reports"
+    )
+    ui_parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host to bind to (default: 127.0.0.1)"
+    )
+    ui_parser.add_argument(
+        "--port",
+        type=int,
+        default=5000,
+        help="Port to bind to (default: 5000)"
+    )
+    ui_parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Run in debug mode with auto-reload"
+    )
+    ui_parser.add_argument(
+        "--data-dir",
+        type=str,
+        help="Data directory (default: scratch/output or scratch/demo_output)"
+    )
+    
     # Parse arguments
     args = parser.parse_args()
     
@@ -173,6 +206,19 @@ Examples:
         if args.show_context:
             sys.argv.append("--show-context")
         return market_main()
+    
+    elif args.command == "ui":
+        import os
+        from ui.app import main as ui_main
+        # Replace sys.argv with UI arguments
+        sys.argv = ["app.py"]
+        sys.argv.extend(["--host", args.host])
+        sys.argv.extend(["--port", str(args.port)])
+        if args.debug:
+            sys.argv.append("--debug")
+        if args.data_dir:
+            sys.argv.extend(["--data-dir", args.data_dir])
+        return ui_main()
     
     else:
         parser.print_help()

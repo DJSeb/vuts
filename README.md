@@ -104,15 +104,21 @@ python src/llm/sentiment_analyzer.py \
 find output/llm_scores -name "*_score.json" | head -5
 ```
 
-### 5. Launch the Web UI (Optional)
+### 5. Launch the Web UI (Recommended)
 
 ```bash
 cd scratch
 
-# Quick launch
-python run_ui.py
+# Launch using vuts command (recommended)
+./vuts ui
 
 # Or with custom options
+./vuts ui --host 0.0.0.0 --port 8080 --debug
+
+# Alternative: Quick launch script
+python run_ui.py
+
+# Alternative: Direct script call
 python src/ui/app.py --host 0.0.0.0 --port 5000
 
 # Then open your browser to http://localhost:5000
@@ -186,6 +192,9 @@ python vuts --help
 
 # Fetch market data
 ./vuts market <SYMBOL1> <SYMBOL2> ... [--days <n>] [--output-dir <dir>]
+
+# Launch web UI
+./vuts ui [--host <host>] [--port <port>] [--debug] [--data-dir <dir>]
 ```
 
 **Command Details:**
@@ -193,6 +202,7 @@ python vuts --help
 - **fetch**: Collects news articles from multiple sources (Google News, Bing, Finnhub, etc.)
 - **analyze**: Performs LLM-powered sentiment analysis on collected articles
 - **market**: Fetches historical market data from Yahoo Finance for context
+- **ui**: Launches the web interface for viewing sentiment analysis reports
 
 For detailed options, use `./vuts <command> --help`
 
