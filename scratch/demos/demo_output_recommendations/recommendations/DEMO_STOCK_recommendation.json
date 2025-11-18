@@ -1,0 +1,95 @@
+{
+  "topic": "DEMO_STOCK",
+  "recommendation": {
+    "recommendation": "HOLD",
+    "confidence_level": "LOW",
+    "score": 4.74,
+    "reasoning": "Aggregated sentiment is uncertain with a score of 4.74 based on 6 article(s). Score distribution: 5 positive, 1 negative, 0 neutral (83% positive, 17% negative). Sentiment is improving (recent: 6.33, older: 2.00) Recommendation confidence is LOW (59%) based on article count, recency, and score consistency.",
+    "risk_factors": [
+      "Low confidence (59%): Recommendation may not be reliable. Consider waiting for more recent news or diverse sources."
+    ],
+    "article_count": 6,
+    "trend_indicator": "\u2197 Improving (trend: +4.33)",
+    "generated_at": "2025-11-18T13:27:52.855038+00:00"
+  },
+  "aggregation": {
+    "score": 4.74,
+    "confidence": 0.59,
+    "article_count": 6,
+    "weighted_count": 3.75,
+    "distribution": {
+      "positive": 5,
+      "negative": 1,
+      "neutral": 0
+    }
+  },
+  "trend": {
+    "trend": "improving",
+    "trend_score": 4.33,
+    "recent_avg": 6.33,
+    "older_avg": 2.0,
+    "description": "Sentiment is improving (recent: 6.33, older: 2.00)"
+  },
+  "articles": [
+    {
+      "title": "Strong Quarterly Results Exceed Expectations",
+      "score": 7.5,
+      "source": "finnhub",
+      "published_at": "2025-11-17T13:27:52.854283+00:00",
+      "source_weight": 1.0,
+      "temporal_weight": 0.906,
+      "combined_weight": 0.906,
+      "explanation": "Revenue up 25% YoY, beat analyst estimates by 15%"
+    },
+    {
+      "title": "Analyst Upgrades to Buy Rating",
+      "score": 6.0,
+      "source": "bingnews",
+      "published_at": "2025-11-16T13:27:52.854283+00:00",
+      "source_weight": 0.9,
+      "temporal_weight": 0.82,
+      "combined_weight": 0.738,
+      "explanation": "Price target raised to $350, citing strong fundamentals"
+    },
+    {
+      "title": "New Product Launch Receives Positive Reviews",
+      "score": 5.5,
+      "source": "googlenews_rss",
+      "published_at": "2025-11-15T13:27:52.854283+00:00",
+      "source_weight": 0.85,
+      "temporal_weight": 0.743,
+      "combined_weight": 0.632,
+      "explanation": "Industry experts praise innovative features and design"
+    },
+    {
+      "title": "Expansion Plans Announced for European Market",
+      "score": 4.0,
+      "source": "bingnews",
+      "published_at": "2025-11-13T13:27:52.854283+00:00",
+      "source_weight": 0.9,
+      "temporal_weight": 0.61,
+      "combined_weight": 0.549,
+      "explanation": "Company opens 50 new locations, hiring 2,000 employees"
+    },
+    {
+      "title": "Minor Supply Chain Disruption Reported",
+      "score": -1.5,
+      "source": "googlenews_rss",
+      "published_at": "2025-11-12T13:27:52.854283+00:00",
+      "source_weight": 0.85,
+      "temporal_weight": 0.552,
+      "combined_weight": 0.469,
+      "explanation": "Temporary delays in one manufacturing facility"
+    },
+    {
+      "title": "Partnership with Major Tech Company",
+      "score": 3.5,
+      "source": "finnhub",
+      "published_at": "2025-11-10T13:27:52.854283+00:00",
+      "source_weight": 1.0,
+      "temporal_weight": 0.453,
+      "combined_weight": 0.453,
+      "explanation": "Strategic alliance to improve product offerings"
+    }
+  ]
+}

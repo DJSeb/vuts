@@ -290,7 +290,7 @@ def save_llm_score(article_file: Path, article: Dict, score: float,
         "scored_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
     
-    safe_json_save(score_filepath, score_record)
+    safe_json_save(score_record, score_filepath)
     print(f"[SAVED] Score {score:+.2f} -> {score_filepath}")
 
 
