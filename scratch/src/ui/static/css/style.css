@@ -1137,3 +1137,39 @@ footer code {
     color: #fca5a5;
 }
 
+/* Validation feedback */
+input:invalid,
+textarea:invalid {
+    border-color: var(--danger-color);
+}
+
+input:valid,
+textarea:valid {
+    border-color: var(--border-color);
+}
+
+.form-group input:focus:invalid,
+.form-group textarea:focus:invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Success messages */
+.success-message {
+    background-color: #d1fae5;
+    border: 1px solid var(--success-color);
+    color: #065f46;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+}
+
+.error-message {
+    background-color: #fee2e2;
+    border: 1px solid var(--danger-color);
+    color: #991b1b;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+}
+
