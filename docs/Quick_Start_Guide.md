@@ -1,22 +1,42 @@
-# LLM Sentiment Analysis System - Quick Start
+# VUTS - Quick Start Guide
 
-This system analyzes financial news articles using Large Language Models (LLMs).
+Complete guide to get started with the AI-powered stock sentiment analysis system, including all phases from news fetching to investment recommendations.
 
 ## What's Included
 
+### Complete System (All Phases)
+- **Phase 2: News Aggregation** - Multi-source news fetching with content extraction
+- **Phase 3: Sentiment Analysis** - LLM-powered scoring from -10.00 to +10.00
+- **Phase 4: Recommendation Engine** - Buy/Hold/Sell signals with confidence levels
+- **Phase 5: Web UI** - Browser-based dashboard for viewing results
+- **Phase 6: Notifications** - Real-time alerts for extreme sentiment changes
+
 ### Core Scripts
-- **`scratch/src/llm/sentiment_analyzer.py`** (14KB) - Main script that analyzes articles using OpenAI API
-- **`scratch/src/market/data_fetcher.py`** (9.7KB) - Fetches historical stock data from Yahoo Finance
-- **`scratch/src/llm/sentiment_prompt.txt`** (2.2KB) - Reusable prompt template for consistent LLM scoring
+### Core Scripts
+- **`scratch/src/fetching/financial_news_collector_async.py`** - Async news fetching from multiple sources (Phase 2)
+- **`scratch/src/llm/sentiment_analyzer.py`** - Main script that analyzes articles using OpenAI API (Phase 3)
+- **`scratch/src/scoring/recommendation_engine.py`** - Generates investment recommendations (Phase 4)
+- **`scratch/src/ui/app.py`** - Flask web UI for viewing results (Phase 5)
+- **`scratch/src/notifications/notification_manager.py`** - Alert system for sentiment changes (Phase 6)
+- **`scratch/src/market/data_fetcher.py`** - Fetches historical stock data from Yahoo Finance
+- **`scratch/src/llm/sentiment_prompt.txt`** - Reusable prompt template for consistent LLM scoring
 
 ### Testing & Demo
-- **`scratch/src/tests/test_llm_analyzer.py`** (8.7KB) - Test suite for validation
-- **`scratch/demos/demo_workflow.py`** (12KB) - Mock workflow demo (no API keys required)
-- **`scratch/demos/demo_openai_api.py`** (31KB) - OpenAI API demo with AMD/Nvidia/Broadcom articles
+- **`scratch/src/tests/test_llm_analyzer.py`** - LLM analyzer test suite
+- **`scratch/src/tests/test_scoring_engine.py`** - Recommendation engine tests (Phase 4)
+- **`scratch/src/tests/test_notifications.py`** - Notification system tests (Phase 6)
+- **`scratch/demos/demo_workflow.py`** - Mock workflow demo (no API keys required)
+- **`scratch/demos/demo_openai_api.py`** - OpenAI API demo with real sentiment analysis
+- **`scratch/demos/demo_recommendations.py`** - Recommendation engine demo (Phase 4)
+- **`scratch/demos/demo_notifications.py`** - Notification system demo (Phase 6)
 
 ### Documentation
-- **`docs/Workflow_Guide.md`** (8.4KB) - Complete usage guide with examples
-- **`scratch/src/llm/README.md`** (3.9KB) - LLM analyzer documentation
+- **`docs/Workflow_Guide.md`** - Complete usage guide with all phases
+- **`docs/Development_Outline.md`** - Project phases and architecture
+- **`scratch/src/llm/README.md`** - LLM analyzer documentation (Phase 3)
+- **`scratch/src/scoring/README.md`** - Recommendation engine documentation (Phase 4)
+- **`scratch/src/ui/README.md`** - Web UI documentation (Phase 5)
+- **`scratch/src/notifications/README.md`** - Notification system documentation (Phase 6)
 
 ## Quick Start (5 minutes)
 
@@ -80,23 +100,81 @@ python src/llm/sentiment_analyzer.py \
 
 #### View Results
 
-**Using Web UI (Recommended):**
+**Using Web UI (Recommended - Phase 5):**
 ```bash
 cd scratch
 ../vuts ui
 # Then open http://localhost:5000 in your browser
 ```
 
+The web UI provides:
+- 📊 Reports dashboard with sentiment trends
+- 📈 Detailed topics view at `/reports/topics`
+- 🔔 Notifications for extreme sentiment changes
+- ⚙️ Configuration management at `/config`
+
 **Using Command Line:**
 ```bash
+# View sentiment scores
 find output/llm_scores -name "*_score.json" | head -3
+
+# View a specific score
+cat output/llm_scores/TSLA/001_article_score.json
 ```
+
+### 4. Generate Investment Recommendations (Phase 4)
+
+After sentiment analysis, generate actionable buy/hold/sell recommendations:
+
+```bash
+cd scratch
+
+# Generate recommendations for all topics
+python src/scoring/recommendation_engine.py \
+    --data-dir output/llm_scores \
+    --output-dir output/recommendations
+
+# View recommendations
+cat output/recommendations/TSLA_recommendation.json
+```
+
+This aggregates multiple article scores with:
+- Source reliability weighting
+- Temporal decay (recent news matters more)
+- Trend analysis (improving/declining/stable)
+- Confidence levels (HIGH/MEDIUM/LOW)
+- Buy/Hold/Sell signals with detailed reasoning
+
+### 5. Enable Notifications (Phase 6)
+
+The notification system automatically alerts you to extreme sentiment changes:
+
+```bash
+cd scratch
+
+# Run notification demo
+python demos/demo_notifications.py
+
+# Start UI to see notifications
+../vuts ui
+# Click the 🔔 bell icon to view alerts
+```
+
+Notifications are created automatically when:
+- Sentiment score ≥ +7.0 (extremely positive)
+- Sentiment score ≤ -7.0 (extremely negative)
 
 ## Key Features
 
 ✅ **LLM-Powered Analysis** - Uses OpenAI GPT models for sentiment scoring  
 ✅ **Score Range: -10.00 to +10.00** - Precise sentiment measurement  
+✅ **Investment Recommendations** - Buy/Hold/Sell signals with confidence levels (Phase 4)  
+✅ **Source Reliability Weighting** - Professional sources weighted higher in recommendations  
+✅ **Temporal Decay** - Recent news matters more with exponential time-based decay  
+✅ **Trend Analysis** - Detects improving/declining/stable sentiment patterns  
 ✅ **Market Context** - Includes historical price data for better analysis  
+✅ **Web UI Dashboard** - Browser-based interface for viewing results (Phase 5)  
+✅ **Notification System** - Real-time alerts for extreme sentiment changes (Phase 6)  
 ✅ **Consistent Scoring** - Carefully designed prompt reduces "LLM moods"  
 ✅ **Cost Efficient** - Uses gpt-4o-mini by default (~$0.15 per 1M tokens)  
 ✅ **Privacy Focused** - No training on your data, temporary chats only  
@@ -177,17 +255,28 @@ Using gpt-4o-mini (recommended):
 
 ## Next Steps
 
-1. **Read** `docs/Workflow_Guide.md` for detailed examples
-2. **Run** `cd scratch && python demos/demo_workflow.py` to see it in action
-3. **Test** with 1-2 real articles first
-4. **Scale** up to larger batches once validated
+1. **Complete the Workflow** - Follow all phases from fetching to recommendations
+2. **Read** `docs/Workflow_Guide.md` for detailed examples of all phases
+3. **Try Demos**:
+   - `demos/demo_workflow.py` - Mock workflow (no API keys)
+   - `demos/demo_openai_api.py` - Real sentiment analysis
+   - `demos/demo_recommendations.py` - Phase 4 recommendation engine
+   - `demos/demo_notifications.py` - Phase 6 notification system
+4. **Launch Web UI** - `../vuts ui` to browse results visually
+5. **Test** with 1-2 real articles first
+6. **Scale** up to larger batches once validated
 
 ## Support & Documentation
 
-- Main Guide: `docs/Workflow_Guide.md`
-- LLM Details: `scratch/src/llm/README.md`
-- Test Suite: `cd scratch && python src/tests/test_llm_analyzer.py`
-- Demos: `cd scratch && python demos/demo_workflow.py` or `python demos/demo_openai_api.py`
+- **Complete Workflow**: `docs/Workflow_Guide.md` (includes all phases)
+- **Development Roadmap**: `docs/Development_Outline.md` (phase details)
+- **Module Documentation**:
+  - LLM Module: `scratch/src/llm/README.md`
+  - Scoring Module: `scratch/src/scoring/README.md` (Phase 4)
+  - UI Module: `scratch/src/ui/README.md` (Phase 5)
+  - Notifications: `scratch/src/notifications/README.md` (Phase 6)
+- **Test Suite**: `cd scratch && python src/tests/test_llm_analyzer.py`
+- **Architecture**: `docs/Architecture_Diagrams.md` (system visualizations)
 
 ---
 
