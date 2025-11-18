@@ -60,6 +60,14 @@ python demos/demo_openai_api.py
 This generates articles about AMD, Nvidia, and Broadcom, then analyzes them using the OpenAI API.
 Estimated cost: ~$0.01 (less than 2 cents for all articles).
 
+**Demo 3: Recommendation Engine Demo (No API Keys Required) - NEW!**
+```bash
+cd scratch
+python demos/demo_recommendations.py
+```
+
+Demonstrates Phase 4 recommendation generation with mock article scores. Shows aggregation, trend analysis, and Buy/Hold/Sell signal generation with full explainability.
+
 ### 3. Set Up for Real Data
 
 ```bash
@@ -88,8 +96,14 @@ cd scratch
 # Analyze sentiment with LLM
 ./vuts analyze --data-dir output --max-articles 10 --market-data-dir output/market_data
 
+# Generate investment recommendations (Phase 4 - NEW!)
+python src/scoring/recommendation_engine.py \
+    --data-dir output/llm_scores \
+    --output-dir output/recommendations
+
 # View results
 find output/llm_scores -name "*_score.json" | head -5
+cat output/recommendations/TSLA_recommendation.json
 ```
 
 #### Alternative: Direct Script Calls
@@ -111,8 +125,14 @@ python src/llm/sentiment_analyzer.py \
     --max-articles 10 \
     --market-data-dir output/market_data
 
+# Generate investment recommendations (Phase 4 - NEW!)
+python src/scoring/recommendation_engine.py \
+    --data-dir output/llm_scores \
+    --output-dir output/recommendations
+
 # View results
 find output/llm_scores -name "*_score.json" | head -5
+cat output/recommendations/TSLA_recommendation.json
 ```
 
 ### 5. Launch the Web UI (Recommended)
@@ -148,6 +168,7 @@ The Web UI provides:
 - **[Architecture Diagrams](docs/Architecture_Diagrams.md)** - Visual system diagrams and flow charts
 - **[Development Outline](docs/Development_Outline.md)** - Project architecture and future plans
 - **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation
+- **[Scoring Module](scratch/src/scoring/README.md)** - **NEW!** Recommendation engine documentation (Phase 4)
 - **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation
 - **[Wiki Pages](wiki/)** - Comprehensive module documentation (ready for GitHub Wiki)
 
@@ -168,6 +189,9 @@ vuts/
 │   │   │   ├── sentiment_analyzer.py
 │   │   │   ├── sentiment_prompt.txt
 │   │   │   └── README.md
+│   │   ├── scoring/              # Recommendation engine (Phase 4 - NEW!)
+│   │   │   ├── recommendation_engine.py
+│   │   │   └── README.md
 │   │   ├── market/               # Market data module
 │   │   │   └── data_fetcher.py
 │   │   ├── ui/                   # Web UI module
@@ -177,11 +201,13 @@ vuts/
 │   │   │   └── README.md
 │   │   ├── tests/                # Test suite
 │   │   │   ├── test_llm_analyzer.py
+│   │   │   ├── test_scoring_engine.py    # Phase 4 tests (NEW!)
 │   │   │   └── test_vuts_entrypoint.py
 │   │   └── utils/                # Shared utilities
 │   ├── demos/                     # Demo applications
-│   │   ├── demo_workflow.py       # Mock workflow demo (no API keys)
-│   │   └── demo_openai_api.py     # OpenAI API demo (requires key)
+│   │   ├── demo_workflow.py           # Mock workflow demo (no API keys)
+│   │   ├── demo_openai_api.py         # OpenAI API demo (requires key)
+│   │   └── demo_recommendations.py    # Recommendation engine demo (NEW!)
 │   ├── example_data/             # Configuration examples
 │   ├── run_ui.py                 # Web UI launcher
 │   └── requirements.txt          # Python dependencies
@@ -227,6 +253,11 @@ For detailed options, use `./vuts <command> --help`
 ✅ **LLM-Powered Sentiment Analysis** - Uses OpenAI GPT models for accurate scoring  
 ✅ **Market Context Integration** - Includes historical price data for better analysis  
 ✅ **Precise Scoring** - Score range from -10.00 to +10.00 with explanations  
+✅ **Investment Recommendations** - **NEW!** Buy/Hold/Sell signals with confidence levels (Phase 4)  
+✅ **Source Reliability Weighting** - **NEW!** Weights scores based on news source credibility  
+✅ **Temporal Decay** - **NEW!** Recent news matters more with exponential time-based decay  
+✅ **Trend Analysis** - **NEW!** Detects improving/declining/stable sentiment patterns  
+✅ **Full Explainability** - **NEW!** Detailed reasoning and risk factors for recommendations  
 ✅ **Cost Efficient** - Uses gpt-4o-mini by default (~$0.0006 per article)  
 ✅ **Web UI** - Browse reports, view sentiment trends, and manage configurations via browser  
 ✅ **Notification System** - Real-time alerts in UI, browser notifications, and phone subscriptions  
@@ -248,6 +279,29 @@ For detailed options, use `./vuts <command> --help`
 | -7 to -4 | Very Negative | Missed earnings, downgrades, major losses |
 | -10 to -7 | Extremely Negative | Bankruptcy, fraud, catastrophic failure |
 
+## 💼 Investment Recommendations (Phase 4)
+
+The recommendation engine aggregates multiple article scores into actionable Buy/Hold/Sell signals:
+
+| Recommendation | Aggregated Score | Confidence | Meaning |
+|---------------|-----------------|------------|---------|
+| **STRONG BUY** | ≥ +5.0 | HIGH | Very positive sentiment, strong opportunity |
+| **BUY** | +2.5 to +5.0 | MEDIUM-HIGH | Positive sentiment, good entry point |
+| **HOLD** | -2.5 to +2.5 | ANY | Neutral sentiment or insufficient data |
+| **SELL** | -5.0 to -2.5 | MEDIUM-HIGH | Negative sentiment, consider reducing |
+| **STRONG SELL** | ≤ -5.0 | HIGH | Very negative sentiment, high risk |
+
+**Key Factors:**
+- **Source Weighting**: Professional APIs (Finnhub) weighted higher than news aggregators
+- **Temporal Decay**: Recent articles have more influence (7-day half-life)
+- **Trend Analysis**: Improving/declining/stable sentiment detection
+- **Confidence Levels**: Based on article count, recency, and consistency
+- **Risk Factors**: Automatically identified concerns and caveats
+
+**⚠️ Disclaimer**: Recommendations are based on sentiment analysis, NOT financial advice. Always do your own research and consult financial professionals.
+
+See [Scoring Module Documentation](scratch/src/scoring/README.md) for details.
+
 ## 🧪 Running Tests
 
 ```bash
@@ -255,6 +309,9 @@ cd scratch
 
 # Test LLM analyzer functionality
 python src/tests/test_llm_analyzer.py
+
+# Test scoring & recommendation engine (Phase 4 - NEW!)
+python src/tests/test_scoring_engine.py
 
 # Test vuts CLI entrypoint
 python src/tests/test_vuts_entrypoint.py
@@ -266,6 +323,9 @@ python src/tests/test_notifications.py
 All tests run without requiring API keys and validate:
 - Prompt template loading and formatting
 - LLM response parsing
+- Temporal decay calculations (Phase 4)
+- Score aggregation with weighting (Phase 4)
+- Trend analysis and recommendation generation (Phase 4)
 - Article discovery and filtering
 - Score saving and validation
 - CLI entrypoint and subcommand routing

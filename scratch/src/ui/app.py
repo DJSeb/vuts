@@ -254,6 +254,14 @@ def config_page():
     )
 
 
+@app.route('/config/editor')
+@app.route('/config/editor/')
+def config_editor():
+    """Configuration editor page."""
+    config = load_config_file()
+    return render_template('config_editor.html', config=config)
+
+
 @app.route('/api/topics')
 def api_topics():
     """API endpoint to get all topics with their summaries."""
@@ -281,6 +289,70 @@ def api_topic_detail(topic: str):
         'scores': topic_scores[topic],
         'summary': calculate_topic_summary(topic_scores[topic])
     })
+
+
+@app.route('/api/config/save', methods=['POST'])
+def api_save_config():
+    """API endpoint to save configuration."""
+    try:
+        config_data = request.get_json()
+        
+        if not config_data:
+            return jsonify({'success': False, 'error': 'No configuration data provided'}), 400
+        
+        # Validate required fields
+        required_fields = ['topics', 'sources', 'max_age_days', 'fetch_full_content', 
+                          'fetch_full_top_n', 'content_extractor', 'max_content_chars']
+        
+        for field in required_fields:
+            if field not in config_data:
+                return jsonify({'success': False, 'error': f'Missing required field: {field}'}), 400
+        
+        # Validate data types and ranges
+        if not isinstance(config_data['topics'], list) or len(config_data['topics']) == 0:
+            return jsonify({'success': False, 'error': 'Topics must be a non-empty list'}), 400
+        
+        if not isinstance(config_data['sources'], list) or len(config_data['sources']) == 0:
+            return jsonify({'success': False, 'error': 'Sources must be a non-empty list'}), 400
+        
+        if not isinstance(config_data['max_age_days'], int) or config_data['max_age_days'] < 1:
+            return jsonify({'success': False, 'error': 'Max age days must be a positive integer'}), 400
+        
+        if not isinstance(config_data['fetch_full_content'], bool):
+            return jsonify({'success': False, 'error': 'Fetch full content must be a boolean'}), 400
+        
+        if not isinstance(config_data['fetch_full_top_n'], int) or config_data['fetch_full_top_n'] < 1:
+            return jsonify({'success': False, 'error': 'Fetch full top N must be a positive integer'}), 400
+        
+        if not isinstance(config_data['max_content_chars'], int) or config_data['max_content_chars'] < 1000:
+            return jsonify({'success': False, 'error': 'Max content chars must be at least 1000'}), 400
+        
+        # Valid extractors
+        valid_extractors = ['readability', 'newspaper', 'beautifulsoup']
+        if config_data['content_extractor'] not in valid_extractors:
+            return jsonify({'success': False, 'error': f'Content extractor must be one of: {", ".join(valid_extractors)}'}), 400
+        
+        # Valid sources
+        valid_sources = ['googlenews_rss', 'bingnews', 'finnhub']
+        for source in config_data['sources']:
+            if source not in valid_sources:
+                return jsonify({'success': False, 'error': f'Invalid source: {source}. Must be one of: {", ".join(valid_sources)}'}), 400
+        
+        # Save to config.json in scratch directory
+        config_path = Path(__file__).parent.parent.parent / "config.json"
+        
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(config_data, f, indent=2)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Configuration saved successfully',
+            'path': str(config_path)
+        })
+    
+    except Exception as e:
+        print(f"Error saving configuration: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/execute', methods=['POST'])
