@@ -18,6 +18,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.datetime_utils import ensure_datetime
+from notifications.notification_manager import NotificationManager
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -451,6 +452,176 @@ def api_execute_command():
         # Don't expose detailed error messages that might leak system information
         print(f"Error executing command: {e}")
         return jsonify({'success': False, 'error': 'An error occurred while executing the command'}), 500
+
+
+# Notification API endpoints
+@app.route('/api/notifications')
+def api_notifications():
+    """API endpoint to get all notifications."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        unread_only = request.args.get('unread_only', 'false').lower() == 'true'
+        limit = request.args.get('limit', type=int)
+        
+        notifications = manager.get_notifications(unread_only=unread_only, limit=limit)
+        
+        return jsonify({
+            'notifications': [n.to_dict() for n in notifications],
+            'unread_count': manager.get_unread_count()
+        })
+    except Exception as e:
+        print(f"Error getting notifications: {e}")
+        return jsonify({'error': 'Failed to retrieve notifications'}), 500
+
+
+@app.route('/api/notifications/unread')
+def api_notifications_unread():
+    """API endpoint to get unread notifications."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        notifications = manager.get_notifications(unread_only=True)
+        
+        return jsonify({
+            'notifications': [n.to_dict() for n in notifications],
+            'count': len(notifications)
+        })
+    except Exception as e:
+        print(f"Error getting unread notifications: {e}")
+        return jsonify({'error': 'Failed to retrieve notifications'}), 500
+
+
+@app.route('/api/notifications/<notification_id>/mark-read', methods=['POST'])
+def api_notification_mark_read(notification_id: str):
+    """API endpoint to mark a notification as read."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        success = manager.mark_as_read(notification_id)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Notification not found'}), 404
+    except Exception as e:
+        print(f"Error marking notification as read: {e}")
+        return jsonify({'error': 'Failed to mark notification as read'}), 500
+
+
+@app.route('/api/notifications/mark-all-read', methods=['POST'])
+def api_notifications_mark_all_read():
+    """API endpoint to mark all notifications as read."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        count = manager.mark_all_as_read()
+        
+        return jsonify({'success': True, 'count': count})
+    except Exception as e:
+        print(f"Error marking all notifications as read: {e}")
+        return jsonify({'error': 'Failed to mark all notifications as read'}), 500
+
+
+@app.route('/api/notifications/<notification_id>', methods=['DELETE'])
+def api_notification_delete(notification_id: str):
+    """API endpoint to delete a notification."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        success = manager.delete_notification(notification_id)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Notification not found'}), 404
+    except Exception as e:
+        print(f"Error deleting notification: {e}")
+        return jsonify({'error': 'Failed to delete notification'}), 500
+
+
+@app.route('/api/notifications/count')
+def api_notifications_count():
+    """API endpoint to get unread notification count."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        return jsonify({'count': manager.get_unread_count()})
+    except Exception as e:
+        print(f"Error getting notification count: {e}")
+        return jsonify({'error': 'Failed to get notification count'}), 500
+
+
+@app.route('/api/notifications/subscribe', methods=['POST'])
+def api_notifications_subscribe():
+    """API endpoint to subscribe to phone notifications."""
+    try:
+        data = request.get_json()
+        phone_number = data.get('phone_number')
+        topics = data.get('topics', [])
+        min_severity = data.get('min_severity', 'warning')
+        
+        if not phone_number:
+            return jsonify({'error': 'Phone number is required'}), 400
+        
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        subscription = manager.add_subscription(
+            phone_number=phone_number,
+            topics=topics,
+            min_severity=min_severity
+        )
+        
+        return jsonify({'success': True, 'subscription': subscription})
+    except Exception as e:
+        print(f"Error adding subscription: {e}")
+        return jsonify({'error': 'Failed to add subscription'}), 500
+
+
+@app.route('/api/notifications/subscribe', methods=['DELETE'])
+def api_notifications_unsubscribe():
+    """API endpoint to unsubscribe from phone notifications."""
+    try:
+        data = request.get_json()
+        phone_number = data.get('phone_number')
+        
+        if not phone_number:
+            return jsonify({'error': 'Phone number is required'}), 400
+        
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        success = manager.remove_subscription(phone_number)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Subscription not found'}), 404
+    except Exception as e:
+        print(f"Error removing subscription: {e}")
+        return jsonify({'error': 'Failed to remove subscription'}), 500
+
+
+@app.route('/api/notifications/subscriptions')
+def api_notifications_subscriptions():
+    """API endpoint to get all active subscriptions."""
+    try:
+        data_dir = get_data_directory()
+        manager = NotificationManager(data_dir)
+        
+        subscriptions = manager.get_subscriptions()
+        
+        return jsonify({'subscriptions': subscriptions})
+    except Exception as e:
+        print(f"Error getting subscriptions: {e}")
+        return jsonify({'error': 'Failed to retrieve subscriptions'}), 500
 
 
 @app.template_filter('format_datetime')
