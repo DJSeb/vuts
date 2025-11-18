@@ -178,8 +178,10 @@ Returns detailed scores for a specific topic:
 - `/reports/topics` - Detailed topics view with all articles
 - `/reports/topics/<topic>` - Individual topic detail page
 - `/config` - Configuration and management page
+- `/config/editor` - Interactive configuration editor (NEW)
 - `/api/topics` - JSON API for all topics
 - `/api/topics/<topic>` - JSON API for specific topic
+- `/api/config/save` - JSON API to save configurations (NEW)
 
 ## Technology Stack
 
@@ -199,6 +201,32 @@ Configuration includes:
 - News sources (googlenews_rss, bingnews, finnhub)
 - Article fetching parameters
 - Content extraction settings
+
+### Configuration Editor
+
+The new Configuration Editor (`/config/editor`) provides a user-friendly interface for creating and editing configurations:
+
+**Features:**
+- **Visual Form Interface**: Easy-to-use form with clear labels and help text
+- **Validation**: Real-time validation of all configuration fields
+- **Preview**: View generated JSON configuration before saving
+- **Download**: Export configuration as JSON file
+- **Save**: Save configuration directly to `scratch/config.json`
+- **Dynamic Fields**: Form fields adjust based on your selections (e.g., content extraction options)
+
+**Usage:**
+1. Navigate to `/config/editor` or click "New Config" in the navigation
+2. Fill in the form fields:
+   - Enter topics (stock symbols) to monitor
+   - Select news sources (checkbox)
+   - Configure article filters (max age)
+   - Set content extraction options
+3. Use the action buttons:
+   - **Preview JSON**: See the configuration before saving
+   - **Download Config**: Save to your local computer
+   - **Save & Use Configuration**: Save to `scratch/config.json`
+
+The editor validates all inputs and prevents invalid configurations from being saved.
 
 ## Production Deployment
 

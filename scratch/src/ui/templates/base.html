@@ -18,6 +18,7 @@
                 <li><a href="{{ url_for('reports') }}" {% if request.endpoint == 'reports' %}class="active"{% endif %}>Reports</a></li>
                 <li><a href="{{ url_for('reports_topics') }}" {% if request.endpoint == 'reports_topics' %}class="active"{% endif %}>Topics</a></li>
                 <li><a href="{{ url_for('config_page') }}" {% if request.endpoint == 'config_page' %}class="active"{% endif %}>Config</a></li>
+                <li><a href="{{ url_for('config_editor') }}" {% if request.endpoint == 'config_editor' %}class="active"{% endif %}>New Config</a></li>
             </ul>
         </div>
     </nav>

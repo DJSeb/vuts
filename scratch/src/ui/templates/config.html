@@ -5,12 +5,15 @@
 {% block content %}
 <div class="page-header">
     <h2>⚙️ Configuration & Management</h2>
-    <p class="subtitle">Manage system settings and data sources</p>
+    <p class="subtitle">View current settings and execute workflow commands</p>
 </div>
 
 <div class="config-container">
     <section class="config-section">
-        <h3>📊 Current Configuration</h3>
+        <div class="section-header-with-action">
+            <h3>📊 Current Configuration</h3>
+            <a href="{{ url_for('config_editor') }}" class="btn btn-primary">✏️ Edit Configuration</a>
+        </div>
         {% if config %}
         <div class="config-display">
             <div class="config-item">
@@ -60,8 +63,8 @@
         </div>
         {% else %}
         <div class="alert alert-info">
-            <p>No configuration file found. Using default settings.</p>
-            <p>Create a configuration file at <code>scratch/config.json</code> or use <code>scratch/example_data/copilot-gpt5-cfg.json</code> as a template.</p>
+            <p>No configuration file found. Create one using the configuration editor.</p>
+            <a href="{{ url_for('config_editor') }}" class="btn btn-primary" style="margin-top: 0.5rem;">➕ Create New Configuration</a>
         </div>
         {% endif %}
     </section>
@@ -90,7 +93,7 @@
     </section>
 
     <section class="config-section">
-        <h3>▶️ Execute Commands</h3>
+        <h3>▶️ Execute Workflow Commands</h3>
         <p class="subtitle">Run vuts commands directly from the UI</p>
         
         <div class="execution-forms">
@@ -203,47 +206,6 @@
     </section>
 
     <section class="config-section">
-        <h3>🔧 Workflow Commands (CLI Reference)</h3>
-        <div class="workflow-commands">
-            <div class="command-card">
-                <h4>1. Fetch News Articles</h4>
-                <pre><code>cd scratch
-python src/fetching/financial_news_collector_async.py \
-    example_data/copilot-gpt5-cfg.json output</code></pre>
-                <p class="command-description">Fetches news articles from configured sources for specified topics.</p>
-            </div>
-
-            <div class="command-card">
-                <h4>2. Fetch Market Data (Optional)</h4>
-                <pre><code>cd scratch
-python src/market/data_fetcher.py TSLA MSFT NVIDIA AMD \
-    --output-dir output/market_data</code></pre>
-                <p class="command-description">Fetches historical market data to provide context for sentiment analysis.</p>
-            </div>
-
-            <div class="command-card">
-                <h4>3. Analyze Sentiment</h4>
-                <pre><code>cd scratch
-python src/llm/sentiment_analyzer.py \
-    --data-dir output \
-    --max-articles 10 \
-    --market-data-dir output/market_data</code></pre>
-                <p class="command-description">Analyzes sentiment of collected articles using LLM.</p>
-                <div class="alert alert-warning">
-                    ⚠️ Requires <code>OPENAI_API_KEY</code> environment variable
-                </div>
-            </div>
-
-            <div class="command-card">
-                <h4>Quick Demo (No API Keys)</h4>
-                <pre><code>cd scratch
-python demo_workflow.py</code></pre>
-                <p class="command-description">Runs a complete demo with mock data - no API keys required.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="config-section">
         <h3>🔑 API Configuration</h3>
         <div class="api-config">
             <div class="alert alert-info">
@@ -262,22 +224,6 @@ python demo_workflow.py</code></pre>
                 
                 <p class="text-muted">Note: Some news sources (like Google News RSS) don't require API keys.</p>
             </div>
-        </div>
-    </section>
-
-    <section class="config-section">
-        <h3>📝 Configuration File Format</h3>
-        <div class="config-template">
-            <p>Create a JSON configuration file with the following structure:</p>
-            <pre><code>{
-  "topics": ["TSLA", "MSFT", "NVIDIA", "AMD"],
-  "sources": ["googlenews_rss", "bingnews", "finnhub"],
-  "max_age_days": 14,
-  "fetch_full_content": true,
-  "fetch_full_top_n": 5,
-  "content_extractor": "readability",
-  "max_content_chars": 6000
-}</code></pre>
         </div>
     </section>
 </div>

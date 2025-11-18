@@ -158,7 +158,8 @@ python src/ui/app.py --host 0.0.0.0 --port 5000
 The Web UI provides:
 - 📊 **Reports Dashboard** - Overview of all topics and sentiment trends
 - 📈 **Topics View** - Detailed article analysis at `/reports/topics`
-- ⚙️ **Configuration Page** - Manage settings and view workflow commands
+- ⚙️ **Configuration Page** - View current settings and execute workflow commands at `/config`
+- 📝 **Configuration Editor** - Create and edit configurations with a user-friendly interface at `/config/editor`
 
 ## 📚 Documentation
 
