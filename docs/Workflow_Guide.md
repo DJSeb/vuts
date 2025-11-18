@@ -24,9 +24,9 @@ export BING_NEWS_KEY="your-bing-key"   # optional
 export FINNHUB_KEY="your-finnhub-key"  # optional
 ```
 
-## Complete Workflow
+## Complete Workflow (All Phases)
 
-### Step 1: Fetch News Articles
+### Step 1: Fetch News Articles (Phase 2)
 
 Use the financial news collector to fetch recent articles:
 
@@ -73,7 +73,7 @@ This will:
 - Save market data to `output/market_data/`
 - Display formatted context that will be sent to LLM
 
-### Step 3: Analyze Sentiment with LLM
+### Step 3: Analyze Sentiment with LLM (Phase 3)
 
 Run the LLM sentiment analyzer on the fetched articles:
 
@@ -99,9 +99,53 @@ This will:
 python src/llm/sentiment_analyzer.py --data-dir output --max-age-days 1 --max-articles 10
 ```
 
-### Step 4: View Results
+### Step 4: Generate Investment Recommendations (Phase 4)
 
-#### Option 1: Using the Web UI (Recommended)
+After sentiment analysis, generate actionable investment recommendations:
+
+```bash
+cd scratch
+
+# Generate recommendations for all topics
+python src/scoring/recommendation_engine.py \
+    --data-dir output/llm_scores \
+    --output-dir output/recommendations
+
+# Process a specific topic only
+python src/scoring/recommendation_engine.py \
+    --data-dir output/llm_scores \
+    --output-dir output/recommendations \
+    --topic TSLA
+```
+
+This will:
+- Aggregate multiple article scores for each topic
+- Apply source reliability weighting (Finnhub: 1.0, Bing: 0.9, Google RSS: 0.85)
+- Apply temporal decay (7-day half-life, recent news matters more)
+- Detect sentiment trends (improving/declining/stable)
+- Generate Buy/Hold/Sell recommendations with confidence levels
+- Provide detailed reasoning and risk factors
+- Save results to `output/recommendations/{topic}_recommendation.json`
+
+**Recommendation Thresholds:**
+- **STRONG BUY**: Aggregated score ≥ +5.0 (very positive sentiment)
+- **BUY**: Score +2.5 to +5.0 (positive sentiment)
+- **HOLD**: Score -2.5 to +2.5 (neutral or low confidence)
+- **SELL**: Score -5.0 to -2.5 (negative sentiment)
+- **STRONG SELL**: Score ≤ -5.0 (very negative sentiment)
+
+View recommendation results:
+```bash
+# View a specific recommendation
+cat output/recommendations/TSLA_recommendation.json
+
+# View all recommendations
+find output/recommendations -name "*_recommendation.json" -exec echo "---" \; -exec jq '{topic, recommendation: .recommendation.recommendation, score: .recommendation.score, confidence: .recommendation.confidence_level}' {} \;
+```
+
+### Step 5: View Results
+
+#### Option 1: Using the Web UI (Recommended - Phase 5)
 
 Launch the web interface to view and explore sentiment analysis results:
 
@@ -127,12 +171,13 @@ cd scratch
 Then open your browser to `http://localhost:5000` (or your specified port) to:
 - View all topics and sentiment trends on the reports dashboard
 - Browse detailed article analysis at `/reports/topics`
+- View notifications for extreme sentiment changes at the notification bell icon
 - Manage configurations and workflow commands at `/config`
 - Access JSON API endpoints at `/api/topics`
 
 #### Option 2: Using Command Line
 
-Check the sentiment scores directly:
+Check the sentiment scores and recommendations directly:
 
 ```bash
 # List all score files
@@ -143,9 +188,12 @@ cat output/llm_scores/TSLA/001_2024-11-10_score.json
 
 # View all scores in a formatted way
 find output/llm_scores -name "*_score.json" -exec echo "---" \; -exec jq '{topic, title, llm_score, llm_explanation}' {} \;
+
+# View recommendations
+cat output/recommendations/TSLA_recommendation.json | jq '{topic, recommendation: .recommendation.recommendation, score: .recommendation.score, reasoning: .recommendation.reasoning}'
 ```
 
-Example output structure:
+Example score output structure:
 ```json
 {
   "article_file": "output/googlenews_rss/TSLA/001_2024-11-10.json",
@@ -162,6 +210,69 @@ Example output structure:
 ```
 
 The `llm_explanation` field provides context for the score, making results more interpretable and useful for reports.
+
+Example recommendation output structure:
+```json
+{
+  "topic": "TSLA",
+  "recommendation": {
+    "recommendation": "BUY",
+    "confidence_level": "HIGH",
+    "score": 5.75,
+    "reasoning": "Aggregated sentiment is positive with a score of 5.75 based on 8 article(s)...",
+    "trend_indicator": "↗ Improving (trend: +1.70)"
+  }
+}
+```
+
+### Step 6: Set Up Notifications (Phase 6)
+
+Configure the notification system to receive alerts for significant sentiment changes:
+
+```bash
+cd scratch
+
+# Run the notification demo to see how it works
+python demos/demo_notifications.py
+
+# Notifications are automatically created when sentiment scores exceed thresholds:
+# - Scores ≥ +7.0: SUCCESS notification (positive sentiment)
+# - Scores ≤ -7.0: CRITICAL notification (negative sentiment)
+```
+
+**Using Notifications in the Web UI:**
+
+1. Launch the web UI: `../vuts ui`
+2. Open http://localhost:5000
+3. Click the 🔔 bell icon in the navigation bar to view notifications
+4. Browser notifications with sound alerts are enabled automatically
+5. Mark notifications as read or subscribe phone numbers for SMS alerts
+
+**API Endpoints for Notifications:**
+```bash
+# Get all notifications
+curl http://localhost:5000/api/notifications
+
+# Get unread notifications
+curl http://localhost:5000/api/notifications/unread
+
+# Mark a notification as read
+curl -X POST http://localhost:5000/api/notifications/<id>/mark-read
+
+# Subscribe phone number for SMS alerts
+curl -X POST http://localhost:5000/api/notifications/subscribe \
+  -H "Content-Type: application/json" \
+  -d '{"phone_number": "+1234567890", "topics": ["TSLA", "MSFT"], "min_severity": "warning"}'
+
+# Get subscriptions
+curl http://localhost:5000/api/notifications/subscriptions
+```
+
+**Notification Severity Levels:**
+- **info**: General updates (blue)
+- **success**: Positive events like extremely positive sentiment (green)
+- **warning**: Concerning events or negative trends (orange)
+- **critical**: Urgent issues like extremely negative sentiment (red)
 
 ## Quick Test Run
 
@@ -250,14 +361,24 @@ Set up a cron job to fetch and analyze news daily:
 Create `daily_analysis.sh`:
 ```bash
 #!/bin/bash
-# Fetch news
+# Complete daily analysis workflow including all phases
+
+# Phase 2: Fetch news
 python src/fetching/financial_news_collector_async.py example_data/copilot-gpt5-cfg.json output
 
 # Fetch market data
 python src/market/data_fetcher.py TSLA MSFT NVIDIA AMD --output-dir output/market_data --use-cache
 
-# Analyze sentiment
+# Phase 3: Analyze sentiment
 python src/llm/sentiment_analyzer.py --data-dir output --max-age-days 1 --max-articles 10 --market-data-dir output/market_data
+
+# Phase 4: Generate recommendations
+python src/scoring/recommendation_engine.py --data-dir output/llm_scores --output-dir output/recommendations
+
+# Display summary
+echo "=== Analysis Complete ==="
+echo "Sentiment scores: $(find output/llm_scores -name "*_score.json" | wc -l) articles"
+echo "Recommendations: $(find output/recommendations -name "*_recommendation.json" | wc -l) topics"
 ```
 
 ## Notes and Best Practices
@@ -288,12 +409,25 @@ python src/llm/sentiment_analyzer.py --data-dir output --max-age-days 1 --max-ar
 
 **Rate limit errors**: Reduce the number of articles or increase the delay between API calls in the code
 
+## Current System Capabilities
+
+The system now includes all major phases:
+
+1. **Phase 2 - News Aggregation** ✅: Multi-source news fetching with content extraction
+2. **Phase 3 - AI Analysis** ✅: LLM-powered sentiment scoring with market context
+3. **Phase 4 - Scoring & Recommendations** ✅: Investment recommendations with explainability
+4. **Phase 5 - User Interface** ✅: Web-based dashboard for viewing results
+5. **Phase 6 - Notifications** ✅: Real-time alerts for significant sentiment changes
+
 ## What's Next?
 
-After collecting sentiment scores, you can:
+After setting up the complete workflow, you can:
 
-1. **Aggregate scores** by topic to see overall sentiment trends
-2. **Correlate with price movements** to validate the sentiment analysis
-3. **Set up alerts** for major sentiment shifts
-4. **Build a dashboard** to visualize sentiment over time
-5. **Compare sources** to see if certain sources are more bullish/bearish
+1. **Monitor Sentiment Trends**: Use the web UI to track sentiment changes over time
+2. **Validate with Price Movements**: Compare recommendations with actual stock performance
+3. **Customize Thresholds**: Adjust scoring and notification thresholds in the code
+4. **Expand Coverage**: Add more topics and news sources to your configuration
+5. **Automate Analysis**: Set up scheduled jobs for continuous monitoring
+6. **Integrate Notifications**: Connect phone subscriptions to SMS/webhook services
+7. **Export Reports**: Use API endpoints to generate custom reports
+8. **Backtest Recommendations**: Analyze historical accuracy of sentiment-based signals
