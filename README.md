@@ -167,9 +167,10 @@ The Web UI provides:
 - **[Complete Workflow Guide](docs/Workflow_Guide.md)** - Detailed usage examples and advanced features
 - **[Architecture Diagrams](docs/Architecture_Diagrams.md)** - Visual system diagrams and flow charts
 - **[Development Outline](docs/Development_Outline.md)** - Project architecture and future plans
-- **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation
-- **[Scoring Module](scratch/src/scoring/README.md)** - **NEW!** Recommendation engine documentation (Phase 4)
-- **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation
+- **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation (Phase 3)
+- **[Scoring Module](scratch/src/scoring/README.md)** - Recommendation engine documentation (Phase 4)
+- **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation (Phase 5)
+- **[Notifications Module](scratch/src/notifications/README.md)** - Alert system documentation (Phase 6)
 - **[Wiki Pages](wiki/)** - Comprehensive module documentation (ready for GitHub Wiki)
 
 ## 📁 Project Structure
@@ -177,37 +178,43 @@ The Web UI provides:
 ```
 vuts/
 ├── docs/                          # Main documentation
-│   ├── Quick_Start_Guide.md
-│   ├── Workflow_Guide.md
-│   └── Development_Outline.md
+│   ├── Quick_Start_Guide.md       # 5-minute getting started
+│   ├── Workflow_Guide.md          # Complete workflow (all phases)
+│   ├── Development_Outline.md     # Project phases and architecture
+│   └── Architecture_Diagrams.md   # System visualizations
 ├── scratch/                       # Main application code
 │   ├── vuts                       # Centralized CLI entrypoint
 │   ├── src/
-│   │   ├── fetching/             # News collection module
+│   │   ├── fetching/             # Phase 2: News collection module
 │   │   │   └── financial_news_collector_async.py
-│   │   ├── llm/                  # LLM sentiment analysis module
+│   │   ├── llm/                  # Phase 3: LLM sentiment analysis
 │   │   │   ├── sentiment_analyzer.py
 │   │   │   ├── sentiment_prompt.txt
 │   │   │   └── README.md
-│   │   ├── scoring/              # Recommendation engine (Phase 4 - NEW!)
+│   │   ├── scoring/              # Phase 4: Recommendation engine
 │   │   │   ├── recommendation_engine.py
 │   │   │   └── README.md
-│   │   ├── market/               # Market data module
-│   │   │   └── data_fetcher.py
-│   │   ├── ui/                   # Web UI module
+│   │   ├── ui/                   # Phase 5: Web UI module
 │   │   │   ├── app.py            # Flask application
 │   │   │   ├── templates/        # HTML templates
 │   │   │   ├── static/           # CSS and assets
 │   │   │   └── README.md
+│   │   ├── notifications/        # Phase 6: Alert system
+│   │   │   ├── notification_manager.py
+│   │   │   └── README.md
+│   │   ├── market/               # Market data module
+│   │   │   └── data_fetcher.py
 │   │   ├── tests/                # Test suite
 │   │   │   ├── test_llm_analyzer.py
-│   │   │   ├── test_scoring_engine.py    # Phase 4 tests (NEW!)
+│   │   │   ├── test_scoring_engine.py
+│   │   │   ├── test_notifications.py
 │   │   │   └── test_vuts_entrypoint.py
 │   │   └── utils/                # Shared utilities
 │   ├── demos/                     # Demo applications
 │   │   ├── demo_workflow.py           # Mock workflow demo (no API keys)
 │   │   ├── demo_openai_api.py         # OpenAI API demo (requires key)
-│   │   └── demo_recommendations.py    # Recommendation engine demo (NEW!)
+│   │   ├── demo_recommendations.py    # Phase 4: Recommendation demo
+│   │   └── demo_notifications.py      # Phase 6: Notification demo
 │   ├── example_data/             # Configuration examples
 │   ├── run_ui.py                 # Web UI launcher
 │   └── requirements.txt          # Python dependencies
