@@ -158,8 +158,8 @@ python src/ui/app.py --host 0.0.0.0 --port 5000
 The Web UI provides:
 - 📊 **Reports Dashboard** - Overview of all topics and sentiment trends
 - 📈 **Topics View** - Detailed article analysis at `/reports/topics`
-- ⚙️ **Configuration Page** - View current settings and execute workflow commands at `/config`
-- 📝 **Configuration Editor** - Create and edit configurations with a user-friendly interface at `/config/editor`
+- 🔔 **Notifications** - Real-time alerts with browser notifications and audible alerts
+- ⚙️ **Configuration Page** - Manage settings and view workflow commands
 
 ## 📚 Documentation
 
@@ -260,6 +260,7 @@ For detailed options, use `./vuts <command> --help`
 ✅ **Full Explainability** - **NEW!** Detailed reasoning and risk factors for recommendations  
 ✅ **Cost Efficient** - Uses gpt-4o-mini by default (~$0.0006 per article)  
 ✅ **Web UI** - Browse reports, view sentiment trends, and manage configurations via browser  
+✅ **Notification System** - Real-time alerts in UI, browser notifications, and phone subscriptions  
 ✅ **Smart Caching** - Avoids re-analyzing articles and re-fetching data  
 ✅ **Async Operations** - Fast parallel processing of multiple sources  
 ✅ **Test Suite** - Comprehensive tests with no API keys required  
@@ -314,6 +315,9 @@ python src/tests/test_scoring_engine.py
 
 # Test vuts CLI entrypoint
 python src/tests/test_vuts_entrypoint.py
+
+# Test notification system
+python src/tests/test_notifications.py
 ```
 
 All tests run without requiring API keys and validate:
@@ -325,6 +329,53 @@ All tests run without requiring API keys and validate:
 - Article discovery and filtering
 - Score saving and validation
 - CLI entrypoint and subcommand routing
+- Notification creation, persistence, and management
+
+## 🔔 Notification System
+
+VUTS includes a comprehensive notification system to alert you about important sentiment changes:
+
+### Features
+
+- **In-App Notifications** - View notifications in the web UI with a notification bell badge
+- **Browser Alerts** - Receive audible browser notifications for critical events
+- **Phone Subscriptions** - Subscribe phone numbers for SMS/webhook notifications
+- **Severity Levels** - info, success, warning, critical with color-coding
+- **Auto-Notifications** - Automatic alerts for extreme sentiment scores (±7.0 threshold)
+
+### Quick Start
+
+```bash
+cd scratch
+
+# Run the notification demo
+python demos/demo_notifications.py
+
+# Start the web UI to see notifications
+./vuts ui
+
+# Click the 🔔 bell icon in the navigation bar
+```
+
+### API Endpoints
+
+- `GET /api/notifications` - Get all notifications
+- `GET /api/notifications/unread` - Get unread notifications
+- `POST /api/notifications/<id>/mark-read` - Mark as read
+- `POST /api/notifications/mark-all-read` - Mark all as read
+- `POST /api/notifications/subscribe` - Subscribe phone number
+- `GET /api/notifications/subscriptions` - Get subscriptions
+
+### Phone Subscriptions
+
+```python
+# Subscribe to notifications
+curl -X POST http://localhost:5000/api/notifications/subscribe \
+  -H "Content-Type: application/json" \
+  -d '{"phone_number": "+1234567890", "topics": ["TSLA", "MSFT"], "min_severity": "warning"}'
+```
+
+See [Notification Module README](scratch/src/notifications/README.md) for detailed documentation.
 
 ## 💰 Cost Estimation
 
@@ -350,9 +401,9 @@ See [Development Outline](docs/Development_Outline.md) for detailed plans.
 Current focus areas:
 - **Phase 2**: News aggregation & storage ✅
 - **Phase 3**: AI-powered sentiment analysis ✅
-- **Phase 4**: Scoring & recommendation engine ✅ **NEW!**
-- **Phase 5**: User interface (in progress)
-- **Phase 6**: Notifications & alerts (planned)
+- **Phase 4**: Scoring & recommendation engine ✅
+- **Phase 5**: User interface ✅
+- **Phase 6**: Notifications & alerts ✅
 
 ## 📝 License
 
