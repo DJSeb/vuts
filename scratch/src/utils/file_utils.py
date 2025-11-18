@@ -25,19 +25,22 @@ def safe_json_load(file_path: Path, default: Any = None) -> Any:
         return default
 
 
-def safe_json_save(file_path: Path, data: Any, json_handler: Callable = None) -> bool:
+def safe_json_save(data: Any, file_path: Path, json_handler: Callable = None) -> bool:
     """
     Safely save data to JSON file with error handling.
     
     Args:
-        file_path: Path to save JSON file
         data: Data to serialize
+        file_path: Path to save JSON file
         json_handler: Optional custom JSON serialization handler
         
     Returns:
         True if successful, False otherwise
     """
     try:
+        # Ensure file_path is a Path object
+        if not isinstance(file_path, Path):
+            file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, default=json_handler)
