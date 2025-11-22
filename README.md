@@ -163,10 +163,17 @@ The Web UI provides:
 
 ## 📚 Documentation
 
+### Getting Started
+- **[Hands-On Tutorial](docs/Tutorial_Hands_On.md)** - 🎓 **NEW!** Interactive tutorial for non-tech users (learn by doing)
 - **[Quick Start Guide](docs/Quick_Start_Guide.md)** - Get up and running in 5 minutes
 - **[Complete Workflow Guide](docs/Workflow_Guide.md)** - Detailed usage examples and advanced features
+
+### Technical Documentation
+- **[Technical Setup Guide](docs/Technical_Setup_Guide.md)** - 🔧 **NEW!** Comprehensive guide for developers and power users
 - **[Architecture Diagrams](docs/Architecture_Diagrams.md)** - Visual system diagrams and flow charts
 - **[Development Outline](docs/Development_Outline.md)** - Project architecture and future plans
+
+### Module Documentation
 - **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation (Phase 3)
 - **[Scoring Module](scratch/src/scoring/README.md)** - Recommendation engine documentation (Phase 4)
 - **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation (Phase 5)
