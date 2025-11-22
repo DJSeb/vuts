@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.datetime_utils import ensure_datetime, is_recent, json_datetime_handler
 from utils.file_utils import safe_json_save, ensure_directory
+from utils.logger import log_fetch_request, log_search_execution
 
 # Optional: improve main content extraction if available
 try:
@@ -551,10 +552,15 @@ async def gather_for_topic(
         articles = await fetch_func(session, topic, max_age_days)
         if not articles:
             print(f"[INFO] No articles found for '{topic}' on {source.title()}")
+            log_search_execution(source, topic, 0)
             continue
+        log_search_execution(source, topic, len(articles))
         await save_articles(session, articles, topic, source, output_base, content_opts)
 
 async def main_async(config: Dict, output_base: Path):
+    # Log the fetch request
+    log_fetch_request(config["sources"], config["topics"])
+    
     conn = aiohttp.TCPConnector(limit_per_host=8)
     timeout = aiohttp.ClientTimeout(total=60)
     content_opts = {
