@@ -19,13 +19,13 @@ The VUTS system follows a clear, linear pipeline from data collection through an
 
 ```mermaid
 graph TB
-    subgraph "Phase 1: Data Collection"
+    subgraph "Stage 1: Data Collection"
         START([User Initiates Workflow]) --> CONFIG[Load Configuration]
         CONFIG --> FETCH[Fetch News Articles]
         CONFIG --> MARKET[Fetch Market Data]
     end
     
-    subgraph "Phase 2: Analysis"
+    subgraph "Stage 2: Analysis"
         FETCH --> FILTER[Filter & Validate Articles]
         MARKET --> CONTEXT[Format Market Context]
         FILTER --> LLM[LLM Sentiment Analysis]
@@ -33,7 +33,7 @@ graph TB
         LLM --> SCORES[Individual Article Scores]
     end
     
-    subgraph "Phase 3: Aggregation"
+    subgraph "Stage 3: Aggregation"
         SCORES --> AGG[Aggregate Scores by Topic]
         AGG --> WEIGHT[Apply Source Weights]
         WEIGHT --> DECAY[Apply Temporal Decay]
@@ -41,7 +41,7 @@ graph TB
         TREND --> REC[Generate Recommendations]
     end
     
-    subgraph "Phase 4: Delivery"
+    subgraph "Stage 4: Delivery"
         REC --> UI[Web UI Display]
         REC --> NOTIFY[Notification System]
         NOTIFY --> BROWSER[Browser Notifications]
@@ -71,25 +71,25 @@ graph TB
 
 ### Pipeline Component Descriptions
 
-**Phase 1: Data Collection**
+**Stage 1: Data Collection**
 - **Load Configuration**: Reads user settings including target topics (e.g., TSLA, MSFT), news sources to query, and time ranges
 - **Fetch News Articles**: Asynchronously queries multiple news APIs (Google News RSS, Bing News, Finnhub) for recent financial articles
 - **Fetch Market Data**: Retrieves historical stock prices, volume, and trading statistics from Yahoo Finance for context
 
-**Phase 2: Analysis**
+**Stage 2: Analysis**
 - **Filter & Validate Articles**: Removes duplicates, validates required fields, and filters by age and relevance
 - **Format Market Context**: Transforms raw market data into structured context (price changes, trends, volatility) for the LLM
 - **LLM Sentiment Analysis**: Sends each article to OpenAI's GPT models with market context to generate sentiment scores (-10.00 to +10.00)
 - **Individual Article Scores**: Stores scored articles with explanations for transparency
 
-**Phase 3: Aggregation**
+**Stage 3: Aggregation**
 - **Aggregate Scores**: Combines multiple article scores for each stock symbol
 - **Apply Source Weights**: Weights scores based on source reliability (e.g., Finnhub 1.0, Bing 0.9, Google RSS 0.85)
 - **Apply Temporal Decay**: Recent articles receive higher weights (7-day half-life exponential decay)
 - **Analyze Trends**: Detects if sentiment is improving, declining, or stable over time
 - **Generate Recommendations**: Produces actionable Buy/Hold/Sell signals with confidence levels
 
-**Phase 4: Delivery**
+**Stage 4: Delivery**
 - **Web UI Display**: Shows interactive dashboard with sentiment trends, article details, and recommendations
 - **Notification System**: Triggers alerts for significant sentiment shifts or extreme scores
 - **Browser Notifications**: In-app alerts with audible notifications
@@ -725,7 +725,7 @@ This document provides the high-level overview. For deeper dives into specific a
 
 ## Summary
 
-VUTS processes financial news through six distinct phases:
+VUTS processes financial news through six distinct stages:
 
 1. **Data Collection** - Fetches news and market data from multiple sources
 2. **Validation** - Filters, deduplicates, and validates data quality
