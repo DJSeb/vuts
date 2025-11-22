@@ -178,10 +178,10 @@ Returns detailed scores for a specific topic:
 - `/reports/topics` - Detailed topics view with all articles
 - `/reports/topics/<topic>` - Individual topic detail page
 - `/config` - Configuration and management page
-- `/config/editor` - Interactive configuration editor (NEW)
+- `/config/editor` - Interactive configuration editor
 - `/api/topics` - JSON API for all topics
 - `/api/topics/<topic>` - JSON API for specific topic
-- `/api/config/save` - JSON API to save configurations (NEW)
+- `/api/config/save` - JSON API to save configurations
 
 ## Technology Stack
 
