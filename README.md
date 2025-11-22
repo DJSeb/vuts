@@ -42,7 +42,15 @@ pip install -r requirements.txt
 
 ### 2. Try the Demos
 
-**Demo 1: Mock Workflow (No API Keys Required)**
+**Demo 1: Real World Large-Scale Demo (No API Keys Required)** ⭐ RECOMMENDED
+```bash
+cd scratch
+python demos/demo_real_world.py
+```
+
+Comprehensive demonstration with 12 companies and 224 articles showcasing the system at scale. Includes diverse writing styles, sentiments, and complete workflow from articles through recommendations.
+
+**Demo 2: Mock Workflow (No API Keys Required)**
 ```bash
 cd scratch
 python demos/demo_workflow.py
@@ -50,7 +58,7 @@ python demos/demo_workflow.py
 
 This creates mock data and demonstrates the complete workflow without needing any API keys.
 
-**Demo 2: OpenAI API Demo (Requires OpenAI API Key)**
+**Demo 3: OpenAI API Demo (Requires OpenAI API Key)**
 ```bash
 cd scratch
 export OPENAI_API_KEY="your-openai-api-key"
@@ -60,13 +68,15 @@ python demos/demo_openai_api.py
 This generates articles about AMD, Nvidia, and Broadcom, then analyzes them using the OpenAI API.
 Estimated cost: ~$0.01 (less than 2 cents for all articles).
 
-**Demo 3: Recommendation Engine Demo (No API Keys Required)**
+**Demo 4: Recommendation Engine Demo (No API Keys Required)**
 ```bash
 cd scratch
 python demos/demo_recommendations.py
 ```
 
 Demonstrates recommendation generation with mock article scores. Shows aggregation, trend analysis, and Buy/Hold/Sell signal generation with full explainability.
+
+See [demos/README.md](scratch/demos/README.md) for detailed information about all demos.
 
 ### 3. Set Up for Real Data
 
