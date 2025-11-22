@@ -710,7 +710,7 @@ This document provides the high-level overview. For deeper dives into specific a
 - **[Hands-On Tutorial](Tutorial_Hands_On.md)** - Interactive tutorial for new users
 
 ### Module Documentation
-- **[Fetching Module README](../scratch/src/fetching/)** - News collection implementation details
+- **[Fetching Module README](../scratch/src/fetching/README.md)** - News collection implementation details
 - **[LLM Module README](../scratch/src/llm/README.md)** - Sentiment analysis and prompt engineering
 - **[Scoring Module README](../scratch/src/scoring/README.md)** - Recommendation engine algorithms
 - **[UI Module README](../scratch/src/ui/README.md)** - Web interface features and API

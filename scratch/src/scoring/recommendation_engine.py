@@ -481,7 +481,7 @@ def generate_recommendation(
 
 
 # ============================================================================
-# SCORING ENGINE: MAIN PROCESSING FUNCTION
+# RECOMMENDATION ENGINE: MAIN PROCESSING FUNCTION
 # ============================================================================
 
 def process_topic_recommendation(
@@ -560,7 +560,7 @@ def process_topic_recommendation(
 
 
 # ============================================================================
-# SCORING ENGINE: CLI INTERFACE
+# RECOMMENDATION ENGINE: CLI INTERFACE
 # ============================================================================
 
 def main():
@@ -605,7 +605,7 @@ def main():
     ensure_directory(args.output_dir)
     
     print("=" * 80)
-    print("SCORING ENGINE: RECOMMENDATION ENGINE")
+    print("RECOMMENDATION ENGINE")
     print("=" * 80)
     print(f"Data directory: {args.data_dir}")
     print(f"Output directory: {args.output_dir}")
