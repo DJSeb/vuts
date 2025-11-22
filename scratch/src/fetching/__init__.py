@@ -1,0 +1,3 @@
+"""
+Financial news fetching module.
+"""

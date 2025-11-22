@@ -1,0 +1,6 @@
+{
+  "sources": ["yahoofinance", "reuters", "cnbc", "googlenews", "marketwatch"],
+  "topics": ["Revolut", "Monzo", "Stripe"],
+  "max_age_days": 30
+}
+

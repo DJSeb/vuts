@@ -1,0 +1,113 @@
+﻿(já)
+Okay Copilot, we got a little bit of an issue here: The script I am giving you (made by ChatGPT5 and ChatGPT4 in tandem) is a part of the project I also gave you an outline of. However, it seems that the websites do not allow simple bots to just download information - which makes sense. However, I am trying to test how doable it would be to assess financial status based on parsing news, purely academic and the important part of the project isn't really having an access, but what can be done with the information.
+So, I would like to ask you, is there anything I can do? Some Playwright script, some macro-like script, actual API for the websites, anything?
+
+(Copilot)(s odkazem na soubor s fetchingem + project outline souborem)
+Krátká odpověď: Ano – místo přímého scrappingu použij oficiální API, RSS/News agregátory (Google News RSS, Bing News Search), nebo akademická data (GDELT). Playwright funguje jako nouzové řešení pro stránky renderované JavaScriptem, ale drž se smluvních podmínek webů. Níže máš konkrétní, rychle nasaditelné varianty a opravy tvého skriptu.
+Co doporučuji podle priority
+•	Bezpečné a udržitelné zdroje (preferováno)
+•	Bing News Search (Azure Cognitive Services): bohaté výsledky, legální, filtrování podle tématu/společnosti, placené ale levné pro testy.
+•	NewsAPI.org: snadné, dobré pro prototypy, limity a licenční omezení.
+•	Finnhub company-news: oficiální firemní zprávy dle tickeru, vhodné pro akcie.
+•	GDELT 2.0: celosvětové zprávy s metadaty a sentimentem, zdarma (CSV/BigQuery), skvělé pro akademické experimenty.
+•	RSS agregace
+•	Google News RSS: spolehlivé, rychlé, umí dotazy a filtry (site:, when:7d). Často stačí k testování bez porušování TOS.
+•	Playwright (nouzovka)
+•	Použij jen tam, kde to TOS výslovně dovolují a když stránka vyžaduje JS. Dodržuj robots.txt, limituj rychlost, řeš consent bannery.
+Rychlé napojení do tvého kódu Níže přidávám:
+1.	Opravy chyb ve tvém skriptu (nekonzistentní práce s datem, drobné chyby v parsování).
+2.	Nové “zdroje” přes API a RSS: newsapi, bingnews, finnhub, googlenews_rss.
+3.	Serializaci datetime do JSON a stabilní pojmenování souborů.
+4.	Zachování stávající architektury a stylu.
+Upravovaný soubor (nahraď celý obsah):
+
+[[Kód pro fetching upraven]]
+
+Praktická doporučení a “legální” cesta
+•	Preferuj API/RSS:
+•	Azure Bing News Search: silné filtrování a legální přístup.
+•	Finnhub company-news: ideální pro tickery (TSLA apod.).
+•	NewsAPI.org: pro prototypy; počítej s limity.
+•	GDELT 2.0: masivní, zdarma, má sentimentové signály (GKG).
+•	Dedup a cache:
+•	Hash podle URL/title+published_at, cache odpovědí API, a plánovač (cron/Task Scheduler/airflow).
+•	Respektuj TOS/robots.txt a autorská práva:
+•	Ukládej metadata a krátké citace/odstavce; celý obsah jen pokud to licence explicitně dovolují.
+•	Pro analýzu sentimentu často stačí titulky + perex.
+Chceš-li, připravím i minimální ETL pro GDELT (CSV fetch + normalizace) nebo drobný wrapper pro Azure Bing News Search s retry a kvótami.
+
+(já)
+No, zkusil jsem zatím pouze tvé návrhy, kromě Playwrightu, které věřím, že jsou OK.
+Dobrá práce, stahujeme alespoň nadpisy a URL na skutčné články, nicméně by se mi možná hodilo mít po ruce i obsah. Je taky ale pravda, že bych se, dle projektu, mohl zeptat LLM, aby se podívaly na internet - což ne všechny dovolují, stejně jako weby (ovšem tam je to as stejně podobné jako u obyčejného scrapingu z naší strany).
+Otázka tedy je, šlo by stahovat i obsahy z webů, nejen URL, ale taky, je nám to k něčemu?
+
+(Copilot)
+Jsem GitHub Copilot. [[<- lol ]]
+Krátká odpověď
+•	Ano, lze stahovat i obsah článků. Prakticky a legálně je nejlepší:
+•	primárně používat “summary/description” z API/RSS (Bing News, NewsAPI, Finnhub, Google News RSS),
+•	plný obsah stahovat selektivně (např. top-N důležitých článků) a extrahovat hlavní text přes “readability”/“paragraphs” s limitem délky.
+•	Je to k něčemu? Ano, ale ne vždy. Pro rychlé signály často stačí titulky+perex; plný text zvyšuje přesnost (relevance, nuance, vysvětlitelnost), ale nese právní a nákladové dopady. Rozumný kompromis: headline + summary pro vše, plný text on‑demand pro top-N.
+Níže přidávám úpravu souboru, která:
+•	přidá volitelný sběr plného obsahu s extrakcí (readability fallback na <p>),
+•	bezpečně využije summary/description z API/RSS (bez nutnosti stahovat stránku),
+•	přidá konfigurační přepínače bez rozbití stávajícího JSON configu.
+Instalace volitelné závislosti (pro lepší extrakci hlavního textu)
+•	pip install readability-lxml
+Aktualizovaný soubor
+
+[[Kód pro fetching upraven]]
+
+Příklad rozšířeného configu (zpětně kompatibilní; nové klíče jsou volitelné)
+```json
+{
+  "topics": ["TSLA", "MSFT", "NVIDIA"],
+  "sources": ["googlenews_rss", "bingnews", "finnhub"],
+  "max_age_days": 14,
+  "fetch_full_content": true,
+  "content_extractor": "readability",
+  "max_content_chars": 6000
+}
+```
+
+Kdy plný obsah dává smysl
+•	Ano: detailní sentiment (nejen “good/bad”, ale volatilita, guidance, citace), relevance k firmě (odlišení makro-odkazů vs. přímých zpráv), lepší vysvětlitelnost (ukázky vět z textu).
+•	Méně přínosné: rychlé signály a backtesting nad mnoha tickery – nadpis+perex často stačí; plný text výrazně zvyšuje latenci, riziko paywallů a právní náklady.
+Praktický kompromis do pipeline
+•	V ingestu ukládej titulky + summary (z API/RSS).
+•	Plný text stahuj pouze:
+•	on‑demand pro top-N článků dle skóre (zdroj, čerstvost, headline sentiment),
+•	při detailním dotazu uživatele (RAG retrieval),
+•	nebo offline pro experimentální dataset s whitelistem domén.
+•	Ukládej jen nezbytné části (např. prvních 1–3 odstavců) a/nebo odvozuj embeddingy a zahazuj raw text.
+•	Respektuj TOS a autorská práva; API/RSS jsou nejčistší cesta.
+Chceš-li, můžu přidat jednoduché “top-N” filtrování před full‑fetch (např. podle skóre z headline-sentimentu) a minimalizovat tím náklady i právní riziko.
+
+(já)
+Můžeš to přidat, to pomůže-
+
+(Copilot)
+Níže přidávám podporu pro “top‑N” selektivní stažení plného obsahu. Heuristicky skóruji články (čerstvost, klíčová slova v titulku/summary, bonus dle domény) a stáhnu plný obsah jen u nejhodnotnějších N. Zbytek použije summary/description z API/RSS. Nastavitelné přes nové pole fetch_full_top_n v configu.
+
+[[Kód pro fetching upraven]]
+
+Co jsem přidal/změnil
+•	Heuristické skórování článků: čerstvost, klíčová slova v titulku/summary, bonus dle domény. Skóre ukládám do výstupního JSON pole score.
+•	Selektivní plný obsah: nový config klíč fetch_full_top_n (např. 5) stáhne plný text jen pro top‑N článků; ostatní použijí summary/description. Pokud fetch_full_content=true a fetch_full_top_n<=0, stáhnou se všechny.
+•	Bez vlivu na stávající chování: pokud fetch_full_content=false, nic se nefetchuje.
+Příklad configu
+
+```json
+{
+  "topics": ["TSLA", "MSFT", "NVIDIA"],
+  "sources": ["googlenews_rss", "bingnews", "finnhub"],
+  "max_age_days": 14,
+  "fetch_full_content": true,
+  "fetch_full_top_n": 5,
+  "content_extractor": "readability",
+  "max_content_chars": 6000
+}
+```
+
+Poznámky
+•	Heuristika je jednoduchá, ale dobrá pro rychlý prototyp. Další krok může být nahrazení KEYWORD_WEIGHTS lehkým sentiment modelem nad titulkem/summary a/nebo učení vah na backtestu.

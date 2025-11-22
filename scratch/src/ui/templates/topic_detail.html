@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic }} - Topic Detail - VUTS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="breadcrumb">
+        <a href="{{ url_for('reports_topics') }}">Topics</a> / <strong>{{ topic }}</strong>
+    </div>
+    <h2>{{ topic }}</h2>
+    <div class="topic-summary">
+        <span class="badge {{ summary.sentiment | replace(' ', '-') }}">
+            {{ summary.sentiment }}
+        </span>
+        <span class="summary-stats">
+            {{ summary.count }} articles analyzed | 
+            Average: <strong class="score-{{ summary.avg_score | sentiment_color }}">{{ summary.avg_score }}</strong> |
+            Latest: <strong class="score-{{ summary.latest_score | sentiment_color }}">{{ summary.latest_score }}</strong>
+        </span>
+    </div>
+</div>
+
+<div class="articles-detail">
+    {% for score in scores %}
+    <div class="article-detail-card">
+        <div class="article-detail-header">
+            <div class="score-badge score-{{ score.llm_score | sentiment_color }}">
+                <div class="score-main">
+                    <span class="score-arrow">{{ score.llm_score | score_arrow }}</span>
+                    <span class="score-value">{{ score.llm_score | round(2) }}</span>
+                </div>
+                <div class="score-label">Sentiment</div>
+            </div>
+            <div class="article-detail-info">
+                <h3>{{ score.title }}</h3>
+                <div class="article-meta">
+                    <span class="date">📅 {{ score.published_at | format_datetime }}</span>
+                    <span class="source">📰 {{ score.source }}</span>
+                    {% if score.model %}
+                    <span class="model">🤖 {{ score.model }}</span>
+                    {% endif %}
+                </div>
+                {% if score.url %}
+                <a href="{{ score.url }}" target="_blank" class="btn btn-link">View Original Article 🔗</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="article-analysis">
+            <h4>Analysis</h4>
+            <p>{{ score.llm_explanation }}</p>
+        </div>
+
+        {% if score.full_content %}
+        <details class="article-content">
+            <summary>View Full Article Content</summary>
+            <div class="content-text">
+                {{ score.full_content }}
+            </div>
+        </details>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="actions-footer">
+    <a href="{{ url_for('reports_topics') }}" class="btn btn-secondary">← Back to Topics</a>
+</div>
+{% endblock %}

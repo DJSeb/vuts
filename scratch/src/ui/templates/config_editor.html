@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration Editor - VUTS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📝 Configuration Editor</h2>
+    <p class="subtitle">Create or modify your VUTS configuration</p>
+</div>
+
+<div class="config-editor-container">
+    <form id="config-editor-form" class="config-editor-form">
+        <section class="editor-section">
+            <h3>📊 Topics to Monitor</h3>
+            <p class="help-text">Enter stock symbols or company names to monitor (one per line or comma-separated)</p>
+            <textarea id="topics" name="topics" rows="5" placeholder="TSLA, MSFT, NVIDIA, AMD" required>{{ config.topics | join(', ') if config else 'TSLA, MSFT, NVIDIA, AMD' }}</textarea>
+        </section>
+
+        <section class="editor-section">
+            <h3>📰 News Sources</h3>
+            <p class="help-text">Select the news sources to fetch articles from</p>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="sources" value="googlenews_rss" {% if not config or 'googlenews_rss' in config.sources %}checked{% endif %}>
+                    <span>Google News RSS (Free, no API key required)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="sources" value="bingnews" {% if config and 'bingnews' in config.sources %}checked{% endif %}>
+                    <span>Bing News (Requires BING_NEWS_KEY)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="sources" value="finnhub" {% if config and 'finnhub' in config.sources %}checked{% endif %}>
+                    <span>Finnhub (Requires FINNHUB_KEY)</span>
+                </label>
+            </div>
+        </section>
+
+        <section class="editor-section">
+            <h3>⏰ Article Filters</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="max_age_days">Maximum Article Age (days):</label>
+                    <input type="number" id="max_age_days" name="max_age_days" min="1" max="365" value="{{ config.max_age_days if config else 14 }}" required>
+                    <small>Only fetch articles published within this many days</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="editor-section">
+            <h3>📄 Content Extraction</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fetch_full_content">Fetch Full Article Content:</label>
+                    <select id="fetch_full_content" name="fetch_full_content" required>
+                        <option value="true" {% if not config or config.fetch_full_content %}selected{% endif %}>Yes</option>
+                        <option value="false" {% if config and not config.fetch_full_content %}selected{% endif %}>No</option>
+                    </select>
+                    <small>Extract full article text for better analysis</small>
+                </div>
+                
+                <div class="form-group" id="full-content-options">
+                    <label for="fetch_full_top_n">Fetch Full Content Top N:</label>
+                    <input type="number" id="fetch_full_top_n" name="fetch_full_top_n" min="1" max="50" value="{{ config.fetch_full_top_n if config else 5 }}">
+                    <small>Number of top articles to extract full content from</small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="content_extractor">Content Extractor:</label>
+                    <select id="content_extractor" name="content_extractor" required>
+                        <option value="readability" {% if not config or config.content_extractor == 'readability' %}selected{% endif %}>Readability (Recommended)</option>
+                        <option value="newspaper" {% if config and config.content_extractor == 'newspaper' %}selected{% endif %}>Newspaper3k</option>
+                        <option value="beautifulsoup" {% if config and config.content_extractor == 'beautifulsoup' %}selected{% endif %}>BeautifulSoup</option>
+                    </select>
+                    <small>Tool used to extract article content</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="max_content_chars">Maximum Content Length:</label>
+                    <input type="number" id="max_content_chars" name="max_content_chars" min="1000" max="50000" step="1000" value="{{ config.max_content_chars if config else 6000 }}" required>
+                    <small>Maximum characters per article (affects LLM cost)</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="editor-section">
+            <div class="form-actions">
+                <button type="button" id="preview-btn" class="btn btn-secondary">
+                    👁️ Preview JSON
+                </button>
+                <button type="button" id="download-btn" class="btn btn-secondary">
+                    💾 Download Config
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    ✅ Save & Use Configuration
+                </button>
+            </div>
+        </section>
+    </form>
+
+    <!-- JSON Preview Modal -->
+    <div id="json-preview-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configuration Preview</h3>
+                <button type="button" id="close-modal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <pre id="json-preview-content" class="json-preview"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="copy-json-btn" class="btn btn-secondary">📋 Copy to Clipboard</button>
+                <button type="button" id="close-modal-btn" class="btn btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('config-editor-form');
+    const fetchFullContent = document.getElementById('fetch_full_content');
+    const fullContentOptions = document.getElementById('full-content-options');
+    const previewBtn = document.getElementById('preview-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const modal = document.getElementById('json-preview-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const closeModal = document.getElementById('close-modal');
+    const copyJsonBtn = document.getElementById('copy-json-btn');
+    
+    // Toggle full content options
+    function toggleFullContentOptions() {
+        if (fetchFullContent.value === 'true') {
+            fullContentOptions.style.display = 'block';
+        } else {
+            fullContentOptions.style.display = 'none';
+        }
+    }
+    
+    fetchFullContent.addEventListener('change', toggleFullContentOptions);
+    toggleFullContentOptions();
+    
+    // Generate config object from form
+    function generateConfig() {
+        const formData = new FormData(form);
+        
+        // Parse topics
+        const topicsText = formData.get('topics');
+        const topics = topicsText.split(/[,\n]/).map(t => t.trim()).filter(t => t);
+        
+        // Parse sources
+        const sources = formData.getAll('sources');
+        
+        const config = {
+            topics: topics,
+            sources: sources,
+            max_age_days: parseInt(formData.get('max_age_days')),
+            fetch_full_content: formData.get('fetch_full_content') === 'true',
+            fetch_full_top_n: parseInt(formData.get('fetch_full_top_n')),
+            content_extractor: formData.get('content_extractor'),
+            max_content_chars: parseInt(formData.get('max_content_chars'))
+        };
+        
+        return config;
+    }
+    
+    // Preview JSON
+    previewBtn.addEventListener('click', function() {
+        const config = generateConfig();
+        const jsonPreview = document.getElementById('json-preview-content');
+        jsonPreview.textContent = JSON.stringify(config, null, 2);
+        modal.style.display = 'flex';
+    });
+    
+    // Close modal
+    closeModalBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Copy JSON to clipboard
+    copyJsonBtn.addEventListener('click', function() {
+        const jsonText = document.getElementById('json-preview-content').textContent;
+        navigator.clipboard.writeText(jsonText).then(function() {
+            const originalText = copyJsonBtn.textContent;
+            copyJsonBtn.textContent = '✓ Copied!';
+            setTimeout(function() {
+                copyJsonBtn.textContent = originalText;
+            }, 2000);
+        });
+    });
+    
+    // Download config
+    downloadBtn.addEventListener('click', function() {
+        const config = generateConfig();
+        const jsonStr = JSON.stringify(config, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'vuts-config.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const config = generateConfig();
+        
+        // Validate
+        if (config.topics.length === 0) {
+            alert('Please enter at least one topic to monitor');
+            return;
+        }
+        
+        if (config.sources.length === 0) {
+            alert('Please select at least one news source');
+            return;
+        }
+        
+        try {
+            // Save configuration
+            const response = await fetch('/api/config/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Configuration saved successfully!\n\nSaved to: ' + result.path);
+                // Optionally redirect to config page
+                window.location.href = '/config';
+            } else {
+                alert('Error saving configuration: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error saving configuration: ' + error.message);
+        }
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
+
+{% endblock %}

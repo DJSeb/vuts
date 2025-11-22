@@ -1,0 +1,9 @@
+{
+  "topics": [ "TSLA", "MSFT", "NVIDIA", "AMD" ],
+  "sources": [ "googlenews_rss", "bingnews", "finnhub" ],
+  "max_age_days": 14,
+  "fetch_full_content": true,
+  "fetch_full_top_n": 5,
+  "content_extractor": "readability",
+  "max_content_chars": 6000
+}
