@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-"Real World" Demo: Large-scale demonstration with 10+ companies.
+"Real World" Demo: Large-scale demonstration with 12 companies.
 
 This demo creates a comprehensive dataset showcasing how the VUTS system works
 at scale with realistic scenarios. It includes:
-- 10+ companies across different sectors
-- 15+ articles per company (with variance)
+- 12 companies across different sectors
+- 15-23 articles per company (with variance)
 - Different writing styles and lengths
 - Diverse sentiments (positive, negative, neutral)
 - Realistic scenarios (not all true, just for demonstration)
@@ -673,7 +673,7 @@ def main():
     print("=" * 80)
     print("\nThis demo showcases the VUTS system at scale with:")
     print(f"  • {len(COMPANIES)} companies across multiple sectors")
-    print("  • 15-20+ articles per company (variable)")
+    print("  • 15-23 articles per company (variable)")
     print("  • Diverse writing styles and sentiments")
     print("  • Realistic scenarios (for demonstration purposes)\n")
     
