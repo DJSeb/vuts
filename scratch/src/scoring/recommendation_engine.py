@@ -1,5 +1,5 @@
 """
-Recommendation Engine - Phase 4: Scoring & Recommendation System
+Recommendation Engine - Scoring & Recommendation System
 
 This module aggregates individual article sentiment scores and generates
 actionable investment recommendations (Buy/Hold/Sell) with detailed explanations.
@@ -12,7 +12,7 @@ The engine considers:
 5. Score distribution and consistency
 
 Author: VUTS Team
-Phase: 4 - Scoring & Recommendation Engine
+Module: Scoring & Recommendation Engine
 Created: 2025-11-18
 """
 
@@ -31,7 +31,7 @@ from utils.file_utils import safe_json_save, ensure_directory
 
 
 # ============================================================================
-# CONFIGURATION CONSTANTS - Phase 4 Feature
+# CONFIGURATION CONSTANTS
 # ============================================================================
 
 # Source reliability weights (higher = more trustworthy)
@@ -68,7 +68,7 @@ CONFIDENCE_THRESHOLD = 0.6   # Minimum confidence score (0.0 to 1.0)
 
 
 # ============================================================================
-# PHASE 4: TEMPORAL DECAY CALCULATION
+# TEMPORAL DECAY CALCULATION
 # ============================================================================
 
 def calculate_temporal_weight(article_date: datetime, reference_date: Optional[datetime] = None) -> float:
@@ -117,7 +117,7 @@ def calculate_temporal_weight(article_date: datetime, reference_date: Optional[d
 
 
 # ============================================================================
-# PHASE 4: SCORE AGGREGATION ENGINE
+# SCORE AGGREGATION ENGINE
 # ============================================================================
 
 def aggregate_scores(
@@ -127,7 +127,7 @@ def aggregate_scores(
     """
     Aggregate multiple article scores into a single topic-level score.
     
-    This is a core Phase 4 feature that combines individual sentiment scores
+    This core feature combines individual sentiment scores
     while considering:
     - Source reliability (some sources are more trustworthy)
     - Temporal decay (recent news matters more)
@@ -161,7 +161,7 @@ def aggregate_scores(
     total_weighted_score = 0.0
     total_weight = 0.0
     
-    # Phase 4: Process each scored article
+    # Process each scored article
     for score_file in score_files:
         try:
             with open(score_file, 'r', encoding='utf-8') as f:
@@ -175,7 +175,7 @@ def aggregate_scores(
             if llm_score is None or published_at is None:
                 continue
             
-            # Phase 4: Calculate combined weight
+            # Calculate combined weight
             # Weight = source_reliability × temporal_decay
             source_weight = SOURCE_WEIGHTS.get(source, SOURCE_WEIGHTS['default'])
             pub_date = ensure_datetime(published_at)
@@ -207,7 +207,7 @@ def aggregate_scores(
             print(f"[WARNING] Error processing {score_file}: {e}")
             continue
     
-    # Phase 4: Calculate aggregated score
+    # Calculate aggregated score
     if total_weight == 0 or len(articles_data) == 0:
         return {
             'aggregated_score': 0.0,
@@ -220,7 +220,7 @@ def aggregate_scores(
     
     aggregated_score = total_weighted_score / total_weight
     
-    # Phase 4: Calculate score distribution
+    # Calculate score distribution
     distribution = {'positive': 0, 'negative': 0, 'neutral': 0}
     for article in articles_data:
         score = article['score']
@@ -231,7 +231,7 @@ def aggregate_scores(
         else:
             distribution['neutral'] += 1
     
-    # Phase 4: Calculate confidence score
+    # Calculate confidence score
     # Higher confidence when:
     # - More articles (up to a point)
     # - More recent articles (higher total_weight)
@@ -258,14 +258,14 @@ def aggregate_scores(
 
 
 # ============================================================================
-# PHASE 4: TREND ANALYSIS
+# TREND ANALYSIS
 # ============================================================================
 
 def calculate_trend(articles: List[Dict]) -> Dict:
     """
     Analyze sentiment trend over time.
     
-    Phase 4 feature that detects if sentiment is improving, declining,
+    Detects if sentiment is improving, declining,
     or stable by comparing recent vs older articles.
     
     Args:
@@ -328,7 +328,7 @@ def calculate_trend(articles: List[Dict]) -> Dict:
 
 
 # ============================================================================
-# PHASE 4: RECOMMENDATION GENERATION
+# RECOMMENDATION GENERATION
 # ============================================================================
 
 def generate_recommendation(
@@ -341,7 +341,7 @@ def generate_recommendation(
     """
     Generate Buy/Hold/Sell recommendation with detailed explanation.
     
-    This is the main Phase 4 feature that produces actionable investment signals
+    Produces actionable investment signals
     based on aggregated sentiment analysis.
     
     Args:
@@ -361,7 +361,7 @@ def generate_recommendation(
         - article_count: Number of articles used
         - trend_indicator: Trend direction and strength
     """
-    # Phase 4: Determine base recommendation from score
+    # Determine base recommendation from score
     if aggregated_score >= RECOMMENDATION_THRESHOLDS['strong_buy']:
         base_rec = 'STRONG BUY'
         sentiment = 'very positive'
@@ -378,7 +378,7 @@ def generate_recommendation(
         base_rec = 'STRONG SELL'
         sentiment = 'very negative'
     
-    # Phase 4: Adjust for confidence level
+    # Adjust for confidence level
     if confidence < CONFIDENCE_THRESHOLD:
         # Low confidence - downgrade to HOLD unless already there
         if base_rec != 'HOLD':
@@ -393,7 +393,7 @@ def generate_recommendation(
     else:
         conf_level = 'LOW'
     
-    # Phase 4: Build reasoning explanation
+    # Build reasoning explanation
     reasoning_parts = []
     
     # Sentiment explanation
@@ -420,7 +420,7 @@ def generate_recommendation(
         f"article count, recency, and score consistency."
     )
     
-    # Phase 4: Identify risk factors
+    # Identify risk factors
     risk_factors = []
     
     if article_count < MIN_ARTICLES:
@@ -460,7 +460,7 @@ def generate_recommendation(
             "Standard investment risks apply. This is sentiment analysis, not financial advice."
         )
     
-    # Phase 4: Determine trend indicator
+    # Determine trend indicator
     if trend['trend'] == 'improving':
         trend_indicator = f"↗ Improving (trend: +{trend['trend_score']:.2f})"
     elif trend['trend'] == 'declining':
@@ -481,7 +481,7 @@ def generate_recommendation(
 
 
 # ============================================================================
-# PHASE 4: MAIN PROCESSING FUNCTION
+# SCORING ENGINE: MAIN PROCESSING FUNCTION
 # ============================================================================
 
 def process_topic_recommendation(
@@ -492,7 +492,7 @@ def process_topic_recommendation(
     """
     Process all scores for a topic and generate a recommendation.
     
-    This is the main entry point for Phase 4 recommendation generation.
+    This is the main entry point for recommendation generation.
     It orchestrates all the scoring components:
     1. Aggregate individual article scores
     2. Analyze sentiment trends
@@ -512,18 +512,18 @@ def process_topic_recommendation(
               f"Need at least {MIN_ARTICLES} for recommendation.")
         return None
     
-    # Phase 4: Step 1 - Aggregate scores
-    print(f"\n[PHASE 4] Processing {topic}: Aggregating {len(score_files)} article(s)...")
+    # Step 1 - Aggregate scores
+    print(f"\n[SCORING] Processing {topic}: Aggregating {len(score_files)} article(s)...")
     aggregation = aggregate_scores(score_files)
     
     if aggregation['article_count'] == 0:
         print(f"[WARNING] {topic}: No valid articles after filtering.")
         return None
     
-    # Phase 4: Step 2 - Analyze trends
+    # Step 2 - Analyze trends
     trend = calculate_trend(aggregation['articles'])
     
-    # Phase 4: Step 3 - Generate recommendation
+    # Step 3 - Generate recommendation
     recommendation = generate_recommendation(
         aggregated_score=aggregation['aggregated_score'],
         confidence=aggregation['confidence'],
@@ -532,7 +532,7 @@ def process_topic_recommendation(
         article_count=aggregation['article_count']
     )
     
-    # Phase 4: Combine all results
+    # Combine all results
     result = {
         'topic': topic,
         'recommendation': recommendation,
@@ -547,12 +547,12 @@ def process_topic_recommendation(
         'articles': aggregation['articles'][:10]  # Include top 10 most recent
     }
     
-    # Phase 4: Save recommendation
+    # Save recommendation
     ensure_directory(output_dir)
     output_file = output_dir / f"{topic}_recommendation.json"
     safe_json_save(result, output_file)
     
-    print(f"[PHASE 4] {topic}: {recommendation['recommendation']} "
+    print(f"[SCORING] {topic}: {recommendation['recommendation']} "
           f"(score: {aggregation['aggregated_score']:.2f}, "
           f"confidence: {recommendation['confidence_level']})")
     
@@ -560,12 +560,12 @@ def process_topic_recommendation(
 
 
 # ============================================================================
-# PHASE 4: CLI INTERFACE
+# SCORING ENGINE: CLI INTERFACE
 # ============================================================================
 
 def main():
     """
-    Command-line interface for Phase 4 recommendation engine.
+    Command-line interface for recommendation engine.
     
     Usage:
         python recommendation_engine.py --data-dir output/llm_scores --output-dir output/recommendations
@@ -573,7 +573,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description='Phase 4: Generate investment recommendations from sentiment scores'
+        description='Generate investment recommendations from sentiment scores'
     )
     parser.add_argument(
         '--data-dir',
@@ -605,7 +605,7 @@ def main():
     ensure_directory(args.output_dir)
     
     print("=" * 80)
-    print("PHASE 4: RECOMMENDATION ENGINE")
+    print("SCORING ENGINE: RECOMMENDATION ENGINE")
     print("=" * 80)
     print(f"Data directory: {args.data_dir}")
     print(f"Output directory: {args.output_dir}")
