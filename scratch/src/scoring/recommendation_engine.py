@@ -28,6 +28,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.datetime_utils import ensure_datetime
 from utils.file_utils import safe_json_save, ensure_directory
+from utils.logger import log_recommendation_generation
 
 
 # ============================================================================
@@ -551,6 +552,13 @@ def process_topic_recommendation(
     ensure_directory(output_dir)
     output_file = output_dir / f"{topic}_recommendation.json"
     safe_json_save(result, output_file)
+    
+    # Log recommendation generation
+    log_recommendation_generation(
+        topic,
+        recommendation['recommendation'],
+        aggregation['aggregated_score']
+    )
     
     print(f"[SCORING] {topic}: {recommendation['recommendation']} "
           f"(score: {aggregation['aggregated_score']:.2f}, "

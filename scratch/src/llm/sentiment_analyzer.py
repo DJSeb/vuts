@@ -20,6 +20,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.datetime_utils import ensure_datetime, json_datetime_handler
 from utils.file_utils import safe_json_save, ensure_directory
+from utils.logger import log_analysis_start, log_article_processing
 
 # Check for OpenAI library
 try:
@@ -361,6 +362,9 @@ async def process_articles(article_files: List[Path], prompt_template: str,
             print(f"  Score: {score:+.2f}")
             print(f"  Explanation: {explanation[:80]}..." if len(explanation) > 80 else f"  Explanation: {explanation}")
             
+            # Log the article processing
+            log_article_processing(topic, article.get('title', 'Unknown'), score)
+            
             # Save score and explanation
             save_llm_score(article_file, article, score, explanation, llm_scores_dir, model)
             
@@ -464,6 +468,9 @@ def main():
     print(f"Model: {args.model}")
     print(f"Max articles: {args.max_articles}")
     print(f"Max age: {args.max_age_days} days")
+    
+    # Log analysis start
+    log_analysis_start(str(data_dir), args.max_articles, args.model)
     
     # Load prompt template
     print("\n[LOADING] Prompt template...")

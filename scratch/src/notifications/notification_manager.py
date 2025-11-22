@@ -7,10 +7,15 @@ and user subscriptions for alerts via UI, browser, and phone.
 
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 from enum import Enum
+
+# Import logger
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.logger import log_notification_created
 
 
 class NotificationSeverity(Enum):
@@ -166,6 +171,9 @@ class NotificationManager:
         
         self.notifications.append(notification)
         self._save_notifications()
+        
+        # Log notification creation
+        log_notification_created(message, severity.value)
         
         return notification
     

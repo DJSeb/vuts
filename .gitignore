@@ -12,3 +12,5 @@ scratch/test_data/
 scratch/market_data/
 scratch/llm_scores/
 scratch/config.json
+scratch/logs/
+logs/

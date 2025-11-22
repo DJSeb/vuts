@@ -12,6 +12,11 @@ import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 import time
+import sys
+
+# Import logger
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils.logger import log_market_data_request
 
 # Try multiple data sources
 try:
@@ -270,6 +275,9 @@ def main():
     print(f"Historical period: {args.days} days")
     print(f"Output directory: {output_dir}")
     print()
+    
+    # Log market data request
+    log_market_data_request(args.symbols, args.days)
     
     results = []
     for i, symbol in enumerate(args.symbols):

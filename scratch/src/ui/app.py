@@ -19,6 +19,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.datetime_utils import ensure_datetime
 from notifications.notification_manager import NotificationManager
+from utils.logger import log_ui_launch, log_api_request
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -358,6 +359,7 @@ def api_save_config():
 @app.route('/api/execute', methods=['POST'])
 def api_execute_command():
     """API endpoint to execute vuts commands."""
+    log_api_request('/api/execute', 'POST')
     try:
         data = request.get_json()
         command = data.get('command')
@@ -530,6 +532,7 @@ def api_execute_command():
 @app.route('/api/notifications')
 def api_notifications():
     """API endpoint to get all notifications."""
+    log_api_request('/api/notifications', 'GET')
     try:
         data_dir = get_data_directory()
         manager = NotificationManager(data_dir)
@@ -781,6 +784,9 @@ def main():
     print()
     print("Press Ctrl+C to stop the server")
     print("=" * 70)
+    
+    # Log UI launch
+    log_ui_launch(args.host, args.port)
     
     app.run(host=args.host, port=args.port, debug=args.debug)
 
