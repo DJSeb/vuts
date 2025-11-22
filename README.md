@@ -29,7 +29,7 @@ graph LR
     style F fill:#f5ffe1
 ```
 
-_See [Architecture Diagrams](docs/Architecture_Diagrams.md) for detailed system visualizations._
+_See [System State Flow](docs/System_State_Flow.md) for complete pipeline visualization and [Architecture Diagrams](docs/Architecture_Diagrams.md) for detailed system diagrams._
 
 ## 🚀 Quick Start
 
@@ -60,13 +60,13 @@ python demos/demo_openai_api.py
 This generates articles about AMD, Nvidia, and Broadcom, then analyzes them using the OpenAI API.
 Estimated cost: ~$0.01 (less than 2 cents for all articles).
 
-**Demo 3: Recommendation Engine Demo (No API Keys Required) - NEW!**
+**Demo 3: Recommendation Engine Demo (No API Keys Required)**
 ```bash
 cd scratch
 python demos/demo_recommendations.py
 ```
 
-Demonstrates Phase 4 recommendation generation with mock article scores. Shows aggregation, trend analysis, and Buy/Hold/Sell signal generation with full explainability.
+Demonstrates recommendation generation with mock article scores. Shows aggregation, trend analysis, and Buy/Hold/Sell signal generation with full explainability.
 
 ### 3. Set Up for Real Data
 
@@ -96,7 +96,7 @@ cd scratch
 # Analyze sentiment with LLM
 ./vuts analyze --data-dir output --max-articles 10 --market-data-dir output/market_data
 
-# Generate investment recommendations (Phase 4 - NEW!)
+# Generate investment recommendations
 python src/scoring/recommendation_engine.py \
     --data-dir output/llm_scores \
     --output-dir output/recommendations
@@ -125,7 +125,7 @@ python src/llm/sentiment_analyzer.py \
     --max-articles 10 \
     --market-data-dir output/market_data
 
-# Generate investment recommendations (Phase 4 - NEW!)
+# Generate investment recommendations
 python src/scoring/recommendation_engine.py \
     --data-dir output/llm_scores \
     --output-dir output/recommendations
@@ -164,20 +164,21 @@ The Web UI provides:
 ## 📚 Documentation
 
 ### Getting Started
-- **[Hands-On Tutorial](docs/Tutorial_Hands_On.md)** - 🎓 **NEW!** Interactive tutorial for non-tech users (learn by doing)
+- **[Hands-On Tutorial](docs/Tutorial_Hands_On.md)** - 🎓 Interactive tutorial for non-tech users (learn by doing)
 - **[Quick Start Guide](docs/Quick_Start_Guide.md)** - Get up and running in 5 minutes
 - **[Complete Workflow Guide](docs/Workflow_Guide.md)** - Detailed usage examples and advanced features
 
 ### Technical Documentation
-- **[Technical Setup Guide](docs/Technical_Setup_Guide.md)** - 🔧 **NEW!** Comprehensive guide for developers and power users
+- **[System State Flow](docs/System_State_Flow.md)** - 📊 Visual state flow diagrams and complete pipeline overview
+- **[Technical Setup Guide](docs/Technical_Setup_Guide.md)** - 🔧 Comprehensive guide for developers and power users
 - **[Architecture Diagrams](docs/Architecture_Diagrams.md)** - Visual system diagrams and flow charts
 - **[Development Outline](docs/Development_Outline.md)** - Project architecture and future plans
 
 ### Module Documentation
-- **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation (Phase 3)
-- **[Scoring Module](scratch/src/scoring/README.md)** - Recommendation engine documentation (Phase 4)
-- **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation (Phase 5)
-- **[Notifications Module](scratch/src/notifications/README.md)** - Alert system documentation (Phase 6)
+- **[LLM Module](scratch/src/llm/README.md)** - Sentiment analyzer documentation
+- **[Scoring Module](scratch/src/scoring/README.md)** - Recommendation engine documentation
+- **[Web UI Module](scratch/src/ui/README.md)** - Web interface documentation
+- **[Notifications Module](scratch/src/notifications/README.md)** - Alert system documentation
 - **[Wiki Pages](wiki/)** - Comprehensive module documentation (ready for GitHub Wiki)
 
 ## 📁 Project Structure
@@ -267,11 +268,11 @@ For detailed options, use `./vuts <command> --help`
 ✅ **LLM-Powered Sentiment Analysis** - Uses OpenAI GPT models for accurate scoring  
 ✅ **Market Context Integration** - Includes historical price data for better analysis  
 ✅ **Precise Scoring** - Score range from -10.00 to +10.00 with explanations  
-✅ **Investment Recommendations** - **NEW!** Buy/Hold/Sell signals with confidence levels (Phase 4)  
-✅ **Source Reliability Weighting** - **NEW!** Weights scores based on news source credibility  
-✅ **Temporal Decay** - **NEW!** Recent news matters more with exponential time-based decay  
-✅ **Trend Analysis** - **NEW!** Detects improving/declining/stable sentiment patterns  
-✅ **Full Explainability** - **NEW!** Detailed reasoning and risk factors for recommendations  
+✅ **Investment Recommendations** - Buy/Hold/Sell signals with confidence levels  
+✅ **Source Reliability Weighting** - Weights scores based on news source credibility  
+✅ **Temporal Decay** - Recent news matters more with exponential time-based decay  
+✅ **Trend Analysis** - Detects improving/declining/stable sentiment patterns  
+✅ **Full Explainability** - Detailed reasoning and risk factors for recommendations  
 ✅ **Cost Efficient** - Uses gpt-4o-mini by default (~$0.0006 per article)  
 ✅ **Web UI** - Browse reports, view sentiment trends, and manage configurations via browser  
 ✅ **Notification System** - Real-time alerts in UI, browser notifications, and phone subscriptions  
@@ -324,7 +325,7 @@ cd scratch
 # Test LLM analyzer functionality
 python src/tests/test_llm_analyzer.py
 
-# Test scoring & recommendation engine (Phase 4 - NEW!)
+# Test scoring & recommendation engine
 python src/tests/test_scoring_engine.py
 
 # Test vuts CLI entrypoint
@@ -337,9 +338,9 @@ python src/tests/test_notifications.py
 All tests run without requiring API keys and validate:
 - Prompt template loading and formatting
 - LLM response parsing
-- Temporal decay calculations (Phase 4)
-- Score aggregation with weighting (Phase 4)
-- Trend analysis and recommendation generation (Phase 4)
+- Temporal decay calculations
+- Score aggregation with weighting
+- Trend analysis and recommendation generation
 - Article discovery and filtering
 - Score saving and validation
 - CLI entrypoint and subcommand routing
@@ -412,12 +413,18 @@ Using gpt-4o-mini (recommended):
 
 See [Development Outline](docs/Development_Outline.md) for detailed plans.
 
-Current focus areas:
-- **Phase 2**: News aggregation & storage ✅
-- **Phase 3**: AI-powered sentiment analysis ✅
-- **Phase 4**: Scoring & recommendation engine ✅
-- **Phase 5**: User interface ✅
-- **Phase 6**: Notifications & alerts ✅
+All core phases complete:
+- ✅ News aggregation & storage
+- ✅ AI-powered sentiment analysis
+- ✅ Scoring & recommendation engine
+- ✅ User interface
+- ✅ Notifications & alerts
+
+Future enhancements:
+- Backtesting and performance correlation
+- Real-time streaming updates
+- Multi-language support
+- Advanced portfolio optimization
 
 ## 📝 License
 
@@ -437,4 +444,4 @@ For questions or feedback, please open an issue on GitHub.
 
 ---
 
-**Note**: This is a Work In Progress (WIP). The system is functional but may undergo significant changes as development continues.
+**Note**: The system is fully functional with all core features implemented. Additional enhancements and optimizations are ongoing.
