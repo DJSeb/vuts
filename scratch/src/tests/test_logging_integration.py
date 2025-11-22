@@ -7,7 +7,6 @@ This test validates that logging works in the context of actual module usage.
 
 import sys
 import tempfile
-import json
 from pathlib import Path
 from datetime import datetime
 

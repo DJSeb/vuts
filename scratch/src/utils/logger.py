@@ -5,7 +5,6 @@ This module provides centralized logging functionality for recording
 user operations and system events. Logs are stored in the logs directory
 with datetime-prefixed filenames.
 """
-import os
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
