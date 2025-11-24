@@ -274,8 +274,8 @@ def main():
     print("\nThis demonstration shows how all components work together")
     print("without requiring actual API keys or network access.\n")
     
-    # Setup
-    demo_dir = Path(__file__).parent / "demo_output"
+    # Setup - save to scratch/demo_output so UI can find it
+    demo_dir = Path(__file__).parent.parent / "demo_output"
     demo_dir.mkdir(exist_ok=True)
     
     # Load prompt template

@@ -72,9 +72,9 @@ python demos/demo_workflow.py
 - Displays final results
 
 **Output:**
-- Articles saved to `demos/demo_output/demo_source/TSLA/`
-- Market data saved to `demos/demo_output/market_data/`
-- Sentiment scores saved to `demos/demo_output/llm_scores/TSLA/`
+- Articles saved to `demo_output/demo_source/TSLA/`
+- Market data saved to `demo_output/market_data/`
+- Sentiment scores saved to `demo_output/llm_scores/TSLA/`
 
 **Use case:** Understanding how the system works without API costs.
 
@@ -172,8 +172,8 @@ python demos/demo_notifications.py
 All demos create output in separate directories to avoid conflicts:
 
 - `demo_real_world.py` → `demo_output_real_world/`
-- `demo_workflow.py` → `demos/demo_output/`
-- `demo_openai_api.py` → `demos/demo_output_openai/`
+- `demo_workflow.py` → `demo_output/`
+- `demo_openai_api.py` → `demo_output_openai/`
 
 These directories are in `.gitignore` and won't be committed to the repository.
 
@@ -183,7 +183,7 @@ To remove demo output:
 
 ```bash
 cd scratch
-rm -rf demos/demo_output demos/demo_output_openai demo_output_real_world
+rm -rf demo_output demo_output_openai demo_output_real_world
 ```
 
 ## Next Steps
