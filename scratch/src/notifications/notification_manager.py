@@ -335,9 +335,15 @@ class NotificationManager:
         Args:
             topic: Stock symbol/topic
             score: Sentiment score
-            threshold_positive: Threshold for positive alerts
-            threshold_negative: Threshold for negative alerts
+            threshold_positive: Threshold for positive alerts (must be positive)
+            threshold_negative: Threshold for negative alerts (must be negative)
         """
+        # Validate thresholds
+        if threshold_positive < 0:
+            threshold_positive = abs(threshold_positive)
+        if threshold_negative > 0:
+            threshold_negative = -abs(threshold_negative)
+        
         if score >= threshold_positive:
             self.add_notification(
                 message=f"Extremely positive sentiment detected for {topic}",

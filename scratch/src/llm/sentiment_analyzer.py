@@ -46,12 +46,18 @@ def load_prompt_template(prompt_path: Path) -> str:
 
 def format_prompt(template: str, article: Dict, market_context: str = "") -> str:
     """Format the prompt template with article data and optional market context."""
+    # Truncate content if too long to avoid token limits
+    content = article.get("content", "N/A")
+    max_content_length = 6000  # Reasonable limit for LLM context
+    if content and len(content) > max_content_length:
+        content = content[:max_content_length] + "... [truncated]"
+    
     prompt = template.format(
         title=article.get("title", "N/A"),
         published_at=article.get("published_at", "N/A"),
         source=article.get("source", "N/A"),
         topic=article.get("topic", "N/A"),
-        content=article.get("content", "N/A")
+        content=content
     )
     
     # Add market context if provided
