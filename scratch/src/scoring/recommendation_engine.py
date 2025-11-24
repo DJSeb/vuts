@@ -301,7 +301,7 @@ def calculate_trend(articles: List[Dict]) -> Dict:
     recent_articles = sorted_articles[:split_point] if split_point > 0 else sorted_articles
     older_articles = sorted_articles[split_point:] if split_point < len(sorted_articles) else []
     
-    # Calculate averages with protection against empty lists
+    # Calculate averages (defensive check for empty lists, though current logic prevents this)
     if not recent_articles:
         recent_avg = 0.0
     else:

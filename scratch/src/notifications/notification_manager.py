@@ -338,10 +338,12 @@ class NotificationManager:
             threshold_positive: Threshold for positive alerts (must be positive)
             threshold_negative: Threshold for negative alerts (must be negative)
         """
-        # Validate thresholds
+        # Validate and correct thresholds if needed
         if threshold_positive < 0:
+            print(f"[WARNING] Positive threshold should be positive, correcting {threshold_positive} to {abs(threshold_positive)}")
             threshold_positive = abs(threshold_positive)
         if threshold_negative > 0:
+            print(f"[WARNING] Negative threshold should be negative, correcting {threshold_negative} to {-abs(threshold_negative)}")
             threshold_negative = -abs(threshold_negative)
         
         if score >= threshold_positive:
