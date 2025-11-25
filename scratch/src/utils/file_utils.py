@@ -43,7 +43,7 @@ def safe_json_save(data: Any, file_path: Path, json_handler: Callable = None) ->
             file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, default=json_handler)
+            json.dump(data, f, indent=2, default=json_handler, ensure_ascii=False)
         return True
     except Exception as e:
         print(f"[ERROR] Could not save JSON to {file_path}: {e}")

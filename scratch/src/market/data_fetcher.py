@@ -52,8 +52,8 @@ def fetch_yahoo_finance_data(symbol: str, days: int = 30) -> Optional[Dict]:
     try:
         ticker = yf.Ticker(symbol)
         
-        # Calculate date range
-        end_date = datetime.datetime.now()
+        # Calculate date range (use timezone-aware datetime)
+        end_date = datetime.datetime.now(datetime.timezone.utc)
         start_date = end_date - datetime.timedelta(days=days)
         
         # Fetch historical data

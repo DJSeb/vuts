@@ -22,6 +22,9 @@ from utils.datetime_utils import ensure_datetime, json_datetime_handler
 from utils.file_utils import safe_json_save, ensure_directory
 from utils.logger import log_analysis_start, log_article_processing
 
+# Configuration constants
+MAX_CONTENT_LENGTH = 6000  # Maximum characters for article content to avoid token limits
+
 # Check for OpenAI library
 try:
     from openai import OpenAI
@@ -46,12 +49,17 @@ def load_prompt_template(prompt_path: Path) -> str:
 
 def format_prompt(template: str, article: Dict, market_context: str = "") -> str:
     """Format the prompt template with article data and optional market context."""
+    # Truncate content if too long to avoid token limits
+    content = article.get("content", "N/A")
+    if content and len(content) > MAX_CONTENT_LENGTH:
+        content = content[:MAX_CONTENT_LENGTH] + "... [truncated]"
+    
     prompt = template.format(
         title=article.get("title", "N/A"),
         published_at=article.get("published_at", "N/A"),
         source=article.get("source", "N/A"),
         topic=article.get("topic", "N/A"),
-        content=article.get("content", "N/A")
+        content=content
     )
     
     # Add market context if provided

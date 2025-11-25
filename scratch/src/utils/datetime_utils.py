@@ -11,17 +11,24 @@ def ensure_datetime(dt_value: Optional[object]) -> datetime.datetime:
     Convert various datetime representations to datetime object with timezone.
     
     Args:
-        dt_value: Can be datetime object, ISO string, or email date string
+        dt_value: Can be datetime object, ISO string, email date string, or None
         
     Returns:
         datetime object with UTC timezone
     """
+    # Handle None and empty values early
+    if dt_value is None:
+        return datetime.datetime.now(datetime.timezone.utc)
+    
     if isinstance(dt_value, datetime.datetime):
         if dt_value.tzinfo is None:
             return dt_value.replace(tzinfo=datetime.timezone.utc)
         return dt_value
         
     if isinstance(dt_value, str):
+        # Handle empty strings
+        if not dt_value.strip():
+            return datetime.datetime.now(datetime.timezone.utc)
         # Try ISO format first
         try:
             dt = datetime.datetime.fromisoformat(dt_value.replace("Z", "+00:00"))

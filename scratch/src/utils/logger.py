@@ -114,7 +114,7 @@ class VutsLogger:
             symbols: List of stock symbols
             days: Number of days of historical data
         """
-        symbols_str = ", ".join(symbols)
+        symbols_str = ", ".join(symbols) if symbols else "no symbols"
         message = f"Fetching market data for {symbols_str}, {days} days of history"
         self._write_log_entry(message)
     

@@ -481,7 +481,8 @@ async def fetch_finnhub(session: ClientSession, topic: str, max_age_days: int) -
     if not FINNHUB_KEY:
         print("[INFO] FINNHUB_KEY not set; skipping Finnhub")
         return []
-    to_dt = datetime.datetime.utcnow().date()
+    # Use timezone-aware datetime instead of deprecated utcnow()
+    to_dt = datetime.datetime.now(datetime.timezone.utc).date()
     from_dt = to_dt - datetime.timedelta(days=max(1, max_age_days))
     url = (
         f"https://finnhub.io/api/v1/company-news"
