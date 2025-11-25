@@ -27,15 +27,20 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-i
 # Configuration
 DEFAULT_DATA_DIR = Path(__file__).parent.parent.parent / "output"
 DEFAULT_DEMO_DIR = Path(__file__).parent.parent.parent / "demo_output"
+DEFAULT_DEMO_REAL_WORLD_DIR = Path(__file__).parent.parent.parent / "demo_output_real_world"
+DEFAULT_DEMO_OPENAI_DIR = Path(__file__).parent.parent.parent / "demo_output_openai"
 
 
 def get_data_directory() -> Path:
-    """Get the data directory, checking for output or demo_output."""
+    """Get the data directory, checking for output or demo directories."""
     data_dir = Path(os.environ.get('VUTS_DATA_DIR', DEFAULT_DATA_DIR))
     
-    # If default doesn't exist, try demo output
-    if not data_dir.exists() and DEFAULT_DEMO_DIR.exists():
-        data_dir = DEFAULT_DEMO_DIR
+    # If default doesn't exist, try demo output directories in order
+    if not data_dir.exists():
+        for demo_dir in [DEFAULT_DEMO_DIR, DEFAULT_DEMO_REAL_WORLD_DIR, DEFAULT_DEMO_OPENAI_DIR]:
+            if demo_dir.exists():
+                data_dir = demo_dir
+                break
     
     return data_dir
 
